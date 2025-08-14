@@ -1,0 +1,282 @@
+--welcome bro, why wanna see this script? yep l so good, l no decode
+
+
+
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Reality Compromised | beta script",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "WELOCOME :>",
+   LoadingSubtitle = "by ScriptTrol",
+   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big_Hub"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local MainTab = Window:CreateTab("Hitbox", nil) -- Title, Image
+local MainSection = MainTab:CreateSection("ALL IS BETA")
+
+local Button = MainTab:CreateButton({
+   Name = "Head Hitbox (Boss)",
+   Callback = function()
+   local bossFolder = workspace:WaitForChild("BossPlayers")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local PhysicsService = game:GetService("PhysicsService")
+
+-- Configuration
+local HEAD_SIZE = Vector3.new(20, 20, 20)
+local HEADSHOT_MULTIPLIER = 2.0
+local DAMAGE_COOLDOWN = 0.5
+local SHOW_HITBOX = false  -- Set to true to make hitboxes visible
+
+-- SAFE Collision Group Setup (Server-Side Only)
+if RunService:IsServer() then
+    pcall(function()
+        -- Create collision groups safely
+        if not PhysicsService:GetCollisionGroup("BossHeads") then
+            PhysicsService:CreateCollisionGroup("BossHeads")
+        end
+        if not PhysicsService:GetCollisionGroup("BossBodies") then
+            PhysicsService:CreateCollisionGroup("BossBodies")
+        end
+        
+        -- Set collision rules
+        PhysicsService:CollisionGroupSetCollidable("BossHeads", "BossBodies", false)
+        PhysicsService:CollisionGroupSetCollidable("BossHeads", "BossHeads", false)
+    end)
+    print("Collision groups configured")
+end
+
+local function setupBoss(bossCharacter)
+    -- Wait for character to load
+    if not bossCharacter:FindFirstChild("Head") then
+        bossCharacter.ChildAdded:Wait()
+    end
+    
+    local head = bossCharacter.Head
+    local humanoid = bossCharacter:FindFirstChildOfClass("Humanoid")
+    local rootPart = bossCharacter:FindFirstChild("HumanoidRootPart")
+    
+    if not humanoid or not rootPart then
+        warn("Boss missing humanoid or root part: "..bossCharacter.Name)
+        return
+    end
+
+    -- SET HEAD SIZE TO 20,20,20 AS REQUESTED
+    head.Size = HEAD_SIZE
+    
+    -- KEEP HITBOX HIDDEN
+    head.Transparency = SHOW_HITBOX and 0.5 or 1  -- Hide head hitbox
+    head.CanTouch = true  -- Ensure head can register hits
+    
+    -- Configure collision groups safely
+    pcall(function()
+        head.CollisionGroup = "BossHeads"
+        for _, part in ipairs(bossCharacter:GetDescendants()) do
+            if part:IsA("BasePart") and part ~= head then
+                part.CollisionGroup = "BossBodies"
+            end
+        end
+    end)
+    
+    -- FIX MOVEMENT: Prevent head from causing collisions
+    head.CanCollide = false  -- Head won't collide with environment
+    head.Massless = true     -- Prevents physics impact
+    
+    -- Movement adjustments
+    humanoid.HipHeight = 3.0
+    humanoid.AutoRotate = true
+    
+    -- Reset humanoid state
+    rootPart.Anchored = false
+    humanoid:ChangeState(Enum.HumanoidStateType.Running)
+    
+    -- Headshot detection
+    local hitDebounce = {}
+    head.Touched:Connect(function(part)
+        -- Skip if touched by boss's own parts
+        if part:IsDescendantOf(bossCharacter) then return end
+        
+        local character = part:FindFirstAncestorOfClass("Model")
+        if not character then return end
+        
+        local player = Players:GetPlayerFromCharacter(character)
+        if not player then return end
+        
+        -- Cooldown check
+        local now = tick()
+        if hitDebounce[player] and (now - hitDebounce[player]) < DAMAGE_COOLDOWN then
+            return
+        end
+        hitDebounce[player] = now
+        
+        -- Apply headshot damage
+        humanoid:TakeDamage(25 * HEADSHOT_MULTIPLIER)
+        print("HEADSHOT! Player:", player.Name, "Boss:", bossCharacter.Name)
+        
+        -- Visual feedback (if hitbox is visible)
+        if SHOW_HITBOX then
+            local originalColor = head.Color
+            head.Color = Color3.new(0, 1, 0)  -- Flash green
+            task.delay(0.1, function()
+                head.Color = originalColor
+            end)
+        end
+    end)
+    
+    -- Movement monitoring
+    local lastPosition = rootPart.Position
+    RunService.Heartbeat:Connect(function()
+        -- Ensure physics is active
+        rootPart.Anchored = false
+        if humanoid:GetState() == Enum.HumanoidStateType.Physics then
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        end
+        
+        -- Detect stuck bosses
+        if (rootPart.Position - lastPosition).Magnitude < 0.1 then
+            -- Apply upward force to unstick
+            rootPart:ApplyImpulse(Vector3.new(0, 50, 0))
+        end
+        lastPosition = rootPart.Position
+    end)
+    
+    print("Boss configured:", bossCharacter.Name, "Head size:", head.Size)
+end
+
+-- Process all bosses
+for _, boss in ipairs(bossFolder:GetChildren()) do
+    if boss:IsA("Model") then
+        task.spawn(setupBoss, boss)
+    end
+end
+
+-- Handle new bosses
+bossFolder.ChildAdded:Connect(function(child)
+    if child:IsA("Model") then
+        task.spawn(setupBoss, child)
+    end
+end)
+
+-- Master movement insurance
+RunService.Heartbeat:Connect(function()
+    for _, boss in ipairs(bossFolder:GetChildren()) do
+        if boss:IsA("Model") then
+            local humanoid = boss:FindFirstChildOfClass("Humanoid")
+            local rootPart = boss:FindFirstChild("HumanoidRootPart")
+            
+            if humanoid and rootPart then
+                -- Critical movement fixes
+                rootPart.Anchored = false
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                
+                -- Auto-unstick if falling
+                if rootPart.Position.Y < -100 then
+                    rootPart.CFrame = CFrame.new(0, 100, 0)
+                end
+            end
+        end
+    end
+end)
+
+print("Boss system activated with hidden 20x20x20 head hitboxes!")
+   end,
+})
+
+local Main1Tab = Window:CreateTab("Inf Money", nil) -- Title, Image
+local Main1Section = Main1Tab:CreateSection("first want be Janitor")
+
+local Button = Main1Tab:CreateButton({
+   Name = "Inf Money by unknow",
+   Callback = function()
+   while true do
+local args = {
+    [1] = "Small"
+}
+
+game:GetService("Players").LocalPlayer.Character.Mop.CleanBlood:FireServer(unpack(args))
+
+local args = {
+    [1] = "Large"
+}
+
+game:GetService("Players").LocalPlayer.Character.Mop.CleanBlood:FireServer(unpack(args))
+task.wait(0)
+end
+   end,
+})
+
+local Button = Main1Tab:CreateButton({
+   Name = "be Janitor",
+   Callback = function()
+   game:GetService("ReplicatedStorage"):WaitForChild("Misc"):WaitForChild("SetupJanitor"):FireServer()
+   end,
+})
+
+local Main3Tab = Window:CreateTab("Troll", nil) -- Title, Image
+
+local Button = Main3Tab:CreateButton({
+   Name = "lag server (first, wanna have"lock in" emote",
+   Callback = function()
+   while 50 do
+   game:GetService("ReplicatedStorage").EmoteEvents.RemoteEvents.PlayEmote:FireServer("Lock In")
+   wait()
+   end
+   end,
+})
+
+local Main2Tab = Window:CreateTab("More", nil) -- Title, Image
+local Main2Section = Main2Tab:CreateSection("More script")
+
+local Button = Main2Tab:CreateButton({
+   Name = "No ProximityPrompt (dont no click, you will got bug)",
+   Callback = function()
+   for i,v in pairs(game:GetService("Workspace"):GetDescendants()) do
+	if v:IsA("ProximityPrompt") then
+		v["HoldDuration"] = 0
+	end
+end
+
+
+game:GetService("ProximityPromptService").PromptButtonHoldBegan:Connect(function(v)
+    v["HoldDuration"] = 0
+end)
+   end,
+})
+
+local Button = Main2Tab:CreateButton({
+   Name = "infinite yield",
+   Callback = function()
+   loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+   end,
+})
