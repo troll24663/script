@@ -1,8 +1,4 @@
 --welcome bro, why wanna see this script? yep l so good, l no decode
-
-
-
-
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
