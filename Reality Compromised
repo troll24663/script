@@ -246,7 +246,7 @@ local Button = Main1Tab:CreateButton({
 local Main3Tab = Window:CreateTab("Troll", nil) -- Title, Image
 
 local Button = Main3Tab:CreateButton({
-   Name = "lag server (first, wanna have"lock in" emote",
+   Name = "lag server (first, wanna have "lock in" emote, and this have 80% got ban, so don't use alt account play)",
    Callback = function()
    while 50 do
    game:GetService("ReplicatedStorage").EmoteEvents.RemoteEvents.PlayEmote:FireServer("Lock In")
