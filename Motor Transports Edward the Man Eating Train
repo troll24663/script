@@ -1,0 +1,167 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- Create the UI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FixedAutoFireGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player.PlayerGui
+
+-- Main compact frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 150, 0, 60)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+mainFrame.Position = UDim2.new(0.5, -75, 0, 20)
+
+-- Add corners
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = mainFrame
+
+-- Thin drag handle
+local dragHandle = Instance.new("Frame")
+dragHandle.Name = "DragHandle"
+dragHandle.Size = UDim2.new(1, 0, 0, 6)
+dragHandle.Position = UDim2.new(0, 0, 0, 0)
+dragHandle.BackgroundColor3 = Color3.fromRGB(70, 120, 200)
+dragHandle.BorderSizePixel = 0
+dragHandle.Parent = mainFrame
+
+-- Auto-fire toggle button
+local fireButton = Instance.new("TextButton")
+fireButton.Name = "FireButton"
+fireButton.Size = UDim2.new(0.9, 0, 0.65, 0)
+fireButton.Position = UDim2.new(0.05, 0, 0.25, 0)
+fireButton.Text = "AUTO FIRE: OFF"
+fireButton.BackgroundColor3 = Color3.fromRGB(55, 55, 70)
+fireButton.TextColor3 = Color3.new(1, 1, 1)
+fireButton.TextSize = 14
+fireButton.Font = Enum.Font.Gotham
+fireButton.Parent = mainFrame
+
+-- Status indicator light
+local statusLight = Instance.new("Frame")
+statusLight.Name = "StatusLight"
+statusLight.Size = UDim2.new(0, 8, 0, 8)
+statusLight.Position = UDim2.new(0.88, 0, 0.17, 0)
+statusLight.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+statusLight.BorderSizePixel = 0
+statusLight.Parent = mainFrame
+local lightCorner = Instance.new("UICorner")
+lightCorner.CornerRadius = UDim.new(1, 0)
+lightCorner.Parent = statusLight
+
+-- FUNCTIONAL DRAG SYSTEM (Fixed)
+local dragging = false
+local dragStartPosition
+local frameStartPosition
+
+-- Function to get current input position
+local function getInputPosition(input)
+    return input.Position
+end
+
+-- Input events for drag
+dragHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+       input.UserInputType == Enum.UserInputType.Touch then
+        
+        dragging = true
+        dragHandle.BackgroundColor3 = Color3.fromRGB(100, 150, 230)
+        frameStartPosition = mainFrame.Position
+        dragStartPosition = input.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or 
+                     input.UserInputType == Enum.UserInputType.Touch) then
+        
+        local currentPos = input.Position
+        local delta = currentPos - dragStartPosition
+        
+        -- Calculate new frame position
+        local newX = frameStartPosition.X.Offset + delta.X
+        local newY = frameStartPosition.Y.Offset + delta.Y
+        
+        -- Apply screen boundaries
+        local viewport = workspace.CurrentCamera.ViewportSize
+        newX = math.clamp(newX, 10, viewport.X - mainFrame.AbsoluteSize.X - 10)
+        newY = math.clamp(newY, 10, viewport.Y - mainFrame.AbsoluteSize.Y - 10)
+        
+        -- Update position
+        mainFrame.Position = UDim2.new(0, newX, 0, newY)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or 
+        input.UserInputType == Enum.UserInputType.Touch) and dragging then
+        dragging = false
+        dragHandle.BackgroundColor3 = Color3.fromRGB(70, 120, 200)
+    end
+end)
+
+-- WORKING AUTO-FIRE SYSTEM (Fixed)
+local firing = false
+
+-- Fire projectile function
+local function fireProjectile()
+    local character = player.Character
+    if not character then return end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    local camera = workspace.CurrentCamera
+    
+    if humanoidRootPart and camera then
+        game:GetService("ReplicatedStorage").Packages.Knit.Services.WeaponService.RE.ShootProjectile:FireServer(
+            humanoidRootPart.Position,
+            camera.CFrame.LookVector,
+            4.000000476837158
+        )
+    end
+end
+
+-- Continuous fire loop with zero delay
+local function fireLoop()
+    while firing and screenGui.Parent do
+        fireProjectile()
+        RunService.Heartbeat:Wait()
+    end
+end
+
+-- Toggle firing state
+fireButton.Activated:Connect(function()
+    firing = not firing
+    
+    if firing then
+        fireButton.Text = "AUTO FIRE: ON"
+        fireButton.BackgroundColor3 = Color3.fromRGB(50, 100, 150)
+        statusLight.BackgroundColor3 = Color3.fromRGB(0, 220, 50)
+        -- Start firing loop
+        task.spawn(fireLoop)
+    else
+        fireButton.Text = "AUTO FIRE: OFF"
+        fireButton.BackgroundColor3 = Color3.fromRGB(55, 55, 70)
+        statusLight.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+    end
+end)
+
+-- Clean up when GUI is removed
+screenGui.Destroying:Connect(function()
+    firing = false
+end)
+
+-- Mobile optimization
+if UserInputService.TouchEnabled then
+    mainFrame.Size = UDim2.new(0, 160, 0, 70)
+    fireButton.TextSize = 15
+    dragHandle.Size = UDim2.new(1, 0, 0, 8)
+end
+
+print("Fixed Auto-Fire GUI loaded successfully!")
