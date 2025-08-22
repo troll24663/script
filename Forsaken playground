@@ -1,0 +1,23 @@
+-- bro why see this?
+
+local player = game:GetService("Players").LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local adminPanel = workspace:FindFirstChild("AdminPanel")
+if not adminPanel then
+    warn("AdminPanel not found!")
+    return
+end
+
+local adminGui = adminPanel:FindFirstChild("AdminPanelGui")
+if not adminGui then
+    warn("AdminPanelGui not found!")
+    return
+end
+
+if playerGui:FindFirstChild(adminGui.Name) then
+    playerGui[adminGui.Name]:Destroy()
+end
+
+local clonedGui = adminGui:Clone()
+clonedGui.Parent = playerGui
