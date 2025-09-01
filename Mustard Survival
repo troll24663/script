@@ -1,0 +1,262 @@
+--Hey Bro Why See This? You Sus🤔
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Mustard Survival | Beta Script",
+   Icon = 10316538658, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "OBCD!!",
+   LoadingSubtitle = "By ScriptTrol",
+   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "ScriptTrol Hub"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+Rayfield:Notify({
+   Title = "Sub Me bro",
+   Content = "You No Subscribe?Job Application!!",
+   Duration = 6.5,
+   Image = "heart-crack",
+})
+
+local MainTab = Window:CreateTab("Main", "Home")
+local MainSection = MainTab:CreateSection("OP")
+
+local Button = MainTab:CreateButton({
+   Name = "infinite stamina",
+   Callback = function()
+   --You think this is ai make or me make? i trust you will choose ai make
+   
+   local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local SprintEvent = ReplicatedStorage:WaitForChild("SprintEvent")
+local CanSprint = ReplicatedStorage:WaitForChild("Can Sprint RemoteEvent")
+
+local staminaGui = Players.LocalPlayer.PlayerGui:WaitForChild("StaminaScreenGui")
+local staminaBar = staminaGui:WaitForChild("Frame").Frame.Frame  -- Matches v_u_6 path
+
+local connections = getconnections(SprintEvent.Event)
+local targetFunc = nil
+for _, conn in ipairs(connections) do
+    if conn.Function then
+        targetFunc = conn.Function
+        break
+    end
+end
+
+if targetFunc then
+    
+    local upvals = debug.getupvalues(targetFunc)
+    
+    local staminaIndex = nil
+    local barIndex = nil
+    local updateFuncIndex = nil
+    
+    for i, val in pairs(upvals) do
+        if type(val) == "number" then
+            staminaIndex = i  -- v_u_5 (stamina value)
+        elseif typeof(val) == "Instance" and val:IsA("Frame") then
+            barIndex = i  -- v_u_6 (stamina bar)
+        elseif type(val) == "function" then
+            updateFuncIndex = i  -- v_u_12 (bar update function)
+        end
+    end
+    
+    if staminaIndex and barIndex and updateFuncIndex then
+        task.spawn(function()
+            while true do
+                
+                debug.setupvalue(targetFunc, staminaIndex, 100)
+                
+                local updateFunc = debug.getupvalue(targetFunc, updateFuncIndex)
+                if updateFunc then
+                    updateFunc()
+                end
+                
+                if staminaBar then
+                    TweenService:Create(staminaBar, TweenInfo.new(0.05, Enum.EasingStyle.Sine), {
+                        BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                    }):Play()
+                end
+                
+                CanSprint:FireServer(true)
+                
+                RunService.Heartbeat:Wait()
+            end
+        end)
+    else
+        warn("Could not find all required upvalues (stamina, bar, or update function).")
+    end
+else
+    warn("Could not find the connected function for SprintEvent.")
+end
+   end,
+})
+
+local Button = MainTab:CreateButton({
+   Name = "Esp MANGO MUSTARD",
+   Callback = function()
+   -- ok you won, this is ai make
+   
+   -- Fixed ESP Script for Roblox Executor (e.g., Krnl)
+-- Highlights only workspace["NPC R6"] with small distance text, excludes players
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Local player and character
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart", 5)
+
+-- Function to set up ESP for a specific NPC
+local function setupESP(npc)
+    if not npc then
+        warn("NPC is nil!")
+        return
+    end
+    
+    -- Verify it's not a player character
+    if Players:GetPlayerFromCharacter(npc) then
+        warn("Skipping player character:", npc.Name)
+        return
+    end
+    
+    -- Set PrimaryPart if not set
+    if not npc.PrimaryPart then
+        npc.PrimaryPart = npc:FindFirstChildWhichIsA("BasePart") or 
+                         npc:FindFirstChild("HumanoidRootPart") or 
+                         npc:FindFirstChild("Torso") or 
+                         npc:FindFirstChild("Head")
+        if not npc.PrimaryPart then
+            warn("No valid PrimaryPart for NPC:", npc.Name)
+            return
+        end
+    end
+    
+    -- Create Highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)  -- Red outline
+    highlight.FillColor = Color3.fromRGB(255, 255, 0)  -- Yellow fill
+    highlight.FillTransparency = 0.7  -- More transparent fill
+    highlight.OutlineTransparency = 0  -- Solid outline
+    highlight.Adornee = npc
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = npc
+    
+    -- Create BillboardGui
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "DistanceGui"
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 80, 0, 20)  -- Small for text
+    billboard.StudsOffset = Vector3.new(0, 2.5, 0)  -- Above NPC
+    billboard.Adornee = npc.PrimaryPart
+    billboard.Parent = npc.PrimaryPart
+    
+    -- Create TextLabel
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "DistanceLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextStrokeTransparency = 0.5
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.TextSize = 10  -- Very small text
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.Text = "Calculating..."
+    textLabel.Parent = billboard
+    
+    -- Update function
+    local function updateESP()
+        if not npc or not npc.Parent or not npc.PrimaryPart or not humanoidRootPart then
+            highlight:Destroy()
+            billboard:Destroy()
+            return false
+        end
+        local distance = (humanoidRootPart.Position - npc.PrimaryPart.Position).Magnitude
+        textLabel.Text = math.floor(distance) .. " studs"
+        highlight.Enabled = true
+        billboard.Enabled = true
+        return true
+    end
+    
+    -- Connect update
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if not updateESP() then
+            connection:Disconnect()
+        end
+    end)
+end
+
+-- Find and setup only NPC R6
+local function findAndSetupNPC()
+    local npc = workspace:FindFirstChild("NPC R6")
+    if npc then
+        print("Found NPC R6, setting up ESP")
+        setupESP(npc)
+    else
+        warn("NPC 'NPC R6' not found in workspace!")
+    end
+end
+
+-- Initial setup
+findAndSetupNPC()
+
+-- Handle NPC spawning later
+workspace.ChildAdded:Connect(function(child)
+    if child.Name == "NPC R6" then
+        print("New NPC R6 detected, setting up ESP")
+        setupESP(child)
+    end
+end)
+
+-- Handle player respawn
+player.CharacterAdded:Connect(function(newCharacter)
+    humanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart", 5)
+end)
+
+-- Debug
+print("ESP Script running for NPC R6 only")
+   end,
+})
+
+local Main1Tab = Window:CreateTab("More", "circle-ellipsis")
+
+local Button = Main1Tab:CreateButton({
+   Name = "infinite yield",
+   Callback = function()
+   loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+   end,
+})
