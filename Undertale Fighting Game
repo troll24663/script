@@ -1,0 +1,135 @@
+--BRO, WHY YOU SEE THIS???
+--Yea the script is ai make
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Path to the RemoteEvent (adjust "Player Name" to the actual player name or dynamically get it)
+local remote = workspace[LocalPlayer.Name].RemoteEvents.AttackOne
+
+-- Listen for key input
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Check if the "5" key was pressed and the input wasn't processed by the game (e.g., not typing in a text box)
+    if input.KeyCode == Enum.KeyCode.One and not gameProcessedEvent then
+        -- Fire the RemoteEvent with the specified arguments
+        remote:FireServer(table.unpack({
+            [1] = 0,
+            [2] = "Start",
+        }))
+    end
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Path to the RemoteEvent (adjust "Player Name" to the actual player name or dynamically get it)
+local remote = workspace[LocalPlayer.Name].RemoteEvents.AttackTwo
+
+-- Listen for key input
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Check if the "5" key was pressed and the input wasn't processed by the game (e.g., not typing in a text box)
+    if input.KeyCode == Enum.KeyCode.Two and not gameProcessedEvent then
+        -- Fire the RemoteEvent with the specified arguments
+        remote:FireServer(table.unpack({
+            [1] = 0,
+            [2] = "Start",
+        }))
+    end
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Path to the RemoteEvent (adjust "Player Name" to the actual player name or dynamically get it)
+local remote = workspace[LocalPlayer.Name].RemoteEvents.AttackThree
+
+-- Listen for key input
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Check if the "5" key was pressed and the input wasn't processed by the game (e.g., not typing in a text box)
+    if input.KeyCode == Enum.KeyCode.Three and not gameProcessedEvent then
+        -- Fire the RemoteEvent with the specified arguments
+        remote:FireServer(table.unpack({
+            [1] = 0,
+            [2] = "Start",
+        }))
+    end
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Path to the RemoteEvent (adjust "Player Name" to the actual player name or dynamically get it)
+local remote = workspace[LocalPlayer.Name].RemoteEvents.AttackFour
+
+-- Listen for key input
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Check if the "5" key was pressed and the input wasn't processed by the game (e.g., not typing in a text box)
+    if input.KeyCode == Enum.KeyCode.Four and not gameProcessedEvent then
+        -- Fire the RemoteEvent with the specified arguments
+        remote:FireServer(table.unpack({
+            [1] = 0,
+            [2] = "Start",
+        }))
+    end
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Path to the RemoteEvent (adjust "Player Name" to the actual player name or dynamically get it)
+local remote = workspace[LocalPlayer.Name].RemoteEvents.AttackFive
+
+-- Listen for key input
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Check if the "5" key was pressed and the input wasn't processed by the game (e.g., not typing in a text box)
+    if input.KeyCode == Enum.KeyCode.Five and not gameProcessedEvent then
+        -- Fire the RemoteEvent with the specified arguments
+        remote:FireServer(table.unpack({
+            [1] = 0,
+            [2] = "Start",
+        }))
+    end
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Path to the RemoteEvent (adjust "Player Name" to the actual player name or dynamically get it)
+local remote = workspace[LocalPlayer.Name].RemoteEvents.AttackSix
+
+-- Listen for key input
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Check if the "5" key was pressed and the input wasn't processed by the game (e.g., not typing in a text box)
+    if input.KeyCode == Enum.KeyCode.Six and not gameProcessedEvent then
+        -- Fire the RemoteEvent with the specified arguments
+        remote:FireServer(table.unpack({
+            [1] = 0,
+            [2] = "Start",
+        }))
+    end
+end)
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Path to the RemoteEvent (adjust "Player Name" to the actual player name or dynamically get it)
+local remote = workspace[LocalPlayer.Name].RemoteEvents.AttackSeven
+
+-- Listen for key input
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Check if the "5" key was pressed and the input wasn't processed by the game (e.g., not typing in a text box)
+    if input.KeyCode == Enum.KeyCode.Seven and not gameProcessedEvent then
+        -- Fire the RemoteEvent with the specified arguments
+        remote:FireServer(table.unpack({
+            [1] = 0,
+            [2] = "Start",
+        }))
+    end
+end)
