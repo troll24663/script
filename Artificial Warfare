@@ -1,0 +1,281 @@
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Caramelldansen",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "ChickenDance",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "GamblersDance",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Griddy",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Headbang",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Jevil",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "JumpStyle",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "KazotskyKick",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "LagTrain",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Locked",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Mannrobics",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Mesmerizer",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "MetroArmSwing",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "MikuLive",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Mystery",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "PBJT",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Popipo",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Rambunctious",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Rampage",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "RatDance",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "SixSeven",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "SodaPop",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Static",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Subject3",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "TVTime",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "TortureDance",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "UnlockIt",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "AegisWall",
+    [3] = "Legendary",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "AmmoScavenger",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "AmmoSupplier",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Bankai",
+    [3] = "Legendary",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "BattleMedic",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Bleed",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "ExplosiveRounds",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Flourish",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "KillStreak",
+    [3] = "Legendary",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "LifeSteal",
+    [3] = "Rare",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "LightningStrikes",
+    [3] = "Mythical",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "MissileExpert",
+    [3] = "Mythical",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "MySkeleton",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Necromancy",
+    [3] = "Mythical",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Poison",
+    [3] = "Legendary",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Pyromaniac",
+    [3] = "Legendary",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Ranger",
+    [3] = "Epic",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Reinforcements",
+    [3] = "Legendary",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Resurrector",
+    [3] = "Legendary",
+}))
+
+game:GetService("ReplicatedStorage").RemoteEvent:FireServer(table.unpack({
+    [1] = "GivePower",
+    [2] = "Sentience",
+    [3] = "Rare",
+}))
