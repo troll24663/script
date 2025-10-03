@@ -1,0 +1,6 @@
+_G.auto = true
+
+while _G.auto do
+    game:GetService("ReplicatedStorage").RemoteEvent_2:FireServer("MadeVideoManually")
+    task.wait()
+end
