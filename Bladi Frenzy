@@ -3,13 +3,13 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Bladi Frenzy | V1 Beta Scripr",
-   LoadingTitle = "Loading Script",
+   Name = "Bladi Frenzy | V1 Beta Script",
+   LoadingTitle = "OMG I 100 MUCH SUBSCRIBE",
    LoadingSubtitle = "by ChatGPT V4 and ScriptTrol",
    ConfigurationSaving = {
       Enabled = true,
       FolderName = nil,
-      FileName = "PlayerScriptConfig"
+      FileName = "ScriptTrol Config"
    }
 })
 
