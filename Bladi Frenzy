@@ -3,9 +3,9 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Player Script",
+   Name = "Bladi Frenzy | V1 Beta Scripr",
    LoadingTitle = "Loading Script",
-   LoadingSubtitle = "Made with Rayfield",
+   LoadingSubtitle = "by ChatGPT V4 and ScriptTrol",
    ConfigurationSaving = {
       Enabled = true,
       FolderName = nil,
@@ -35,6 +35,352 @@ PlayerTab:CreateToggle({
             end
             task.wait()
          end
+      end)
+   end,
+})
+
+local SpeedSection = PlayerTab:CreateSection("Speed Boost")
+
+_G.speedValue = 50
+PlayerTab:CreateInput({
+   Name = "Speed Value",
+   PlaceholderText = "Enter speed value",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+      local num = tonumber(Text)
+      if num then
+         _G.speedValue = num
+      end
+   end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "TPWalk (Speed Boost)",
+   CurrentValue = false,
+   Flag = "TPWalk",
+   Callback = function(Value)
+      _G.tpWalkEnabled = Value
+      if not Value then return end
+      local Character = LocalPlayer.Character
+      local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+      if not RootPart then return end
+      local lastPosition = RootPart.Position
+      spawn(function()
+         while _G.tpWalkEnabled do
+            local Character = LocalPlayer.Character
+            local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+            if not RootPart then
+               task.wait(0.1)
+               continue
+            end
+            local moveVector = Vector3.new(0, 0, 0)
+            local camera = workspace.CurrentCamera
+            local forward = camera.CFrame.LookVector
+            local right = camera.CFrame.RightVector
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+               moveVector = moveVector + forward
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+               moveVector = moveVector - forward
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+               moveVector = moveVector - right
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+               moveVector = moveVector + right
+            end
+            if moveVector.Magnitude > 0 then
+               moveVector = moveVector.Unit
+               local newPosition = lastPosition + (moveVector * _G.speedValue * 0.016)  -- Delta time approx
+               RootPart.CFrame = CFrame.new(newPosition, newPosition + forward)
+               lastPosition = newPosition
+            end
+            task.wait()
+         end
+      end)
+   end,
+})
+
+local ESPSection = PlayerTab:CreateSection("ESP Settings")
+
+PlayerTab:CreateToggle({
+   Name = "ESP Enabled",
+   CurrentValue = false,
+   Flag = "ESPEnabled",
+   Callback = function(Value) _G.espEnabled = Value end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "Chams Enabled",
+   CurrentValue = false,
+   Flag = "ChamsEnabled",
+   Callback = function(Value) _G.chamsEnabled = Value end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "Box Enabled",
+   CurrentValue = false,
+   Flag = "BoxEnabled",
+   Callback = function(Value) _G.boxEnabled = Value end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "Name Enabled",
+   CurrentValue = false,
+   Flag = "NameEnabled",
+   Callback = function(Value) _G.nameEnabled = Value end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "Line ESP Enabled",
+   CurrentValue = false,
+   Flag = "LineEnabled",
+   Callback = function(Value) _G.lineEnabled = Value end,
+})
+
+PlayerTab:CreateToggle({
+   Name = "Team Check",
+   CurrentValue = false,
+   Flag = "TeamCheck",
+   Callback = function(Value) _G.teamCheck = Value end,
+})
+
+local ESPColor = Color3.fromRGB(255, 0, 0)
+PlayerTab:CreateColorPicker({
+   Name = "ESP Color",
+   Color = ESPColor,
+   Callback = function(Value)
+      ESPColor = Value
+   end,
+})
+
+local ESPs = {}
+local function CreateESP(PlayerFolder)
+   if ESPs[PlayerFolder] then return end
+   
+   local Highlight = Instance.new("Highlight")
+   Highlight.Name = "Chams"
+   Highlight.FillColor = ESPColor
+   Highlight.OutlineColor = ESPColor
+   Highlight.FillTransparency = 0.5
+   Highlight.OutlineTransparency = 0
+   Highlight.Enabled = false
+   Highlight.Parent = PlayerFolder
+   
+   local Box = Drawing.new("Square")
+   Box.Color = ESPColor
+   Box.Thickness = 2
+   Box.Transparency = 1
+   Box.Filled = false
+   Box.Visible = false
+   
+   local NameLabel = Drawing.new("Text")
+   NameLabel.Color = ESPColor
+   NameLabel.Size = 16
+   NameLabel.Center = true
+   NameLabel.Outline = true
+   NameLabel.Text = PlayerFolder.Name
+   NameLabel.Visible = false
+   
+   local Tracer = Drawing.new("Line")
+   Tracer.Color = ESPColor
+   Tracer.Thickness = 1
+   Tracer.Transparency = 1
+   Tracer.Visible = false
+   
+   ESPs[PlayerFolder] = {Highlight = Highlight, Box = Box, Name = NameLabel, Tracer = Tracer}
+end
+
+local function UpdateESP()
+   for PlayerFolder, Esp in pairs(ESPs) do
+      if not PlayerFolder or not PlayerFolder.Parent then
+         if Esp then
+            if Esp.Box then Esp.Box:Remove() end
+            if Esp.Name then Esp.Name:Remove() end
+            if Esp.Tracer then Esp.Tracer:Remove() end
+            if Esp.Highlight then Esp.Highlight:Destroy() end
+         end
+         ESPs[PlayerFolder] = nil
+         continue
+      end
+      
+      local Humanoid = PlayerFolder:FindFirstChild("Humanoid")
+      local Head = PlayerFolder:FindFirstChild("Head")
+      local RootPart = PlayerFolder:FindFirstChild("HumanoidRootPart") or PlayerFolder:FindFirstChild("Torso")
+      
+      if Humanoid and Humanoid.Health > 0 and RootPart and PlayerFolder.Name ~= LocalPlayer.Name then
+         local IsTeamMate = _G.teamCheck and LocalPlayer.Team == Players[PlayerFolder.Name].Team
+         
+         if _G.espEnabled and not IsTeamMate then
+            Esp.Highlight.FillColor = ESPColor
+            Esp.Highlight.OutlineColor = ESPColor
+            Esp.Box.Color = ESPColor
+            Esp.Name.Color = ESPColor
+            Esp.Tracer.Color = ESPColor
+            
+            Esp.Highlight.Enabled = _G.chamsEnabled
+            
+            local RootPos, OnScreen = Camera:WorldToViewportPoint(RootPart.Position)
+            
+            if OnScreen then
+               if _G.boxEnabled then
+                  local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
+                  local LegPos = Camera:WorldToViewportPoint(RootPart.Position - Vector3.new(0, 4, 0))
+                  Esp.Box.Size = Vector2.new(2000 / RootPos.Z, HeadPos.Y - LegPos.Y)
+                  Esp.Box.Position = Vector2.new(RootPos.X - Esp.Box.Size.X / 2, LegPos.Y)
+                  Esp.Box.Visible = true
+               else
+                  Esp.Box.Visible = false
+               end
+               
+               if _G.nameEnabled then
+                  local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 2, 0))
+                  Esp.Name.Position = Vector2.new(HeadPos.X, HeadPos.Y - 20)
+                  Esp.Name.Visible = true
+               else
+                  Esp.Name.Visible = false
+               end
+               
+               if _G.lineEnabled then
+                  Esp.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                  Esp.Tracer.To = Vector2.new(RootPos.X, RootPos.Y)
+                  Esp.Tracer.Visible = true
+               else
+                  Esp.Tracer.Visible = false
+               end
+            else
+               Esp.Box.Visible = false
+               Esp.Name.Visible = false
+               Esp.Tracer.Visible = false
+               Esp.Highlight.Enabled = false
+            end
+         else
+            Esp.Box.Visible = false
+            Esp.Name.Visible = false
+            Esp.Tracer.Visible = false
+            Esp.Highlight.Enabled = false
+         end
+      end
+   end
+end
+
+workspace.Game.Players.ChildAdded:Connect(CreateESP)
+for _, child in workspace.Game.Players:GetChildren() do
+   CreateESP(child)
+end
+RunService.RenderStepped:Connect(UpdateESP)
+
+local MapTab = Window:CreateTab("Map", 4483362458)
+
+local function getItems()
+   local items = {}
+   pcall(function()
+      if not workspace.Game.Map:FindFirstChild("Item") then
+         return items
+      end
+      for _, item in pairs(workspace.Game.Map.Item:GetChildren()) do
+         if item:FindFirstChild("InteractionHitbox") and item.InteractionHitbox:FindFirstChild("Interact") then
+            table.insert(items, item.Name)
+         end
+      end
+   end)
+   return items
+end
+
+local items = getItems()
+_G.selectedItem = items[1] or nil
+
+local ItemDropdown
+ItemDropdown = MapTab:CreateDropdown({
+   Name = "Select Item",
+   Options = items,
+   CurrentOption = _G.selectedItem or "No items found",
+   Flag = "SelectedItem",
+   Callback = function(Option)
+      _G.selectedItem = Option
+   end,
+})
+
+MapTab:CreateButton({
+   Name = "Refresh Items",
+   Callback = function()
+      local newItems = getItems()
+      ItemDropdown:Refresh(newItems, true)
+      if #newItems > 0 then
+         _G.selectedItem = newItems[1]
+         ItemDropdown:Set(_G.selectedItem)
+         Rayfield:Notify({
+            Title = "Refreshed",
+            Content = #newItems .. " items loaded.",
+            Duration = 2.0,
+            Image = 4483362458,
+         })
+      else
+         _G.selectedItem = nil
+         Rayfield:Notify({
+            Title = "Refreshed",
+            Content = "No items found.",
+            Duration = 2.0,
+            Image = 4483362458,
+         })
+      end
+   end,
+})
+
+MapTab:CreateButton({
+   Name = "Get Selected Item",
+   Callback = function()
+      if _G.selectedItem and _G.selectedItem ~= "No items found" then
+         pcall(function()
+            local item = workspace.Game.Map.Item[_G.selectedItem]
+            local hitbox = item.InteractionHitbox
+            local remote = hitbox.Interact
+            
+            local Character = LocalPlayer.Character
+            local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+            if not RootPart then return end
+            
+            local tpPosition = hitbox.Position - hitbox.CFrame.LookVector * 4 + Vector3.new(0, 0, 0)
+            local tpCFrame = CFrame.lookAt(tpPosition, hitbox.Position)
+            RootPart.CFrame = tpCFrame
+            task.wait(0.1)
+            
+            remote:FireServer(RootPart.CFrame)
+            
+            Rayfield:Notify({
+               Title = "Success",
+               Content = _G.selectedItem .. " interacted! (Teleported)",
+               Duration = 2.0,
+               Image = 4483362458,
+            })
+         end)
+      else
+         Rayfield:Notify({
+            Title = "Error",
+            Content = "No item selected or available.",
+            Duration = 3.0,
+            Image = 4483362458,
+         })
+      end
+   end,
+})
+
+MapTab:CreateButton({
+   Name = "Remove All Doors",
+   Callback = function()
+      pcall(function()
+         if workspace.Game.Map:FindFirstChild("Doors") then
+            workspace.Game.Map.Doors:Destroy()
+         end
+         Rayfield:Notify({
+            Title = "Success",
+            Content = "All doors removed!",
+            Duration = 2.0,
+            Image = 4483362458,
+         })
+      end)
+   end,
+})         end
       end)
    end,
 })
