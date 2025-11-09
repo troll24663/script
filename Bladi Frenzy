@@ -8,6 +8,10 @@
 
 
 
+-- V2
+
+
+
 
 
 
@@ -22,388 +26,560 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Bladi Frenzy | V1 Beta Script",
+   Name = "Bladi Frenzy | V2 Beta Script",
    LoadingTitle = "OMG I HAVE 100 MUCH SUBSCRIBE",
-   LoadingSubtitle = "by ChatGPT V4 and ScriptTrol",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil,
-      FileName = "ScriptTrol Config"
-   }
+   LoadingSubtitle = "by ChatGPT V4, Deepseek, grok (MVP) and ScriptTrol (Stupid)",
+   ConfigurationSaving = { Enabled = true, FolderName = nil, FileName = "ScriptTrol Config" }
 })
 
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- Create Player Tab
+-- === TABS ===
 local PlayerTab = Window:CreateTab("Player", 4483362458)
+local MapTab = Window:CreateTab("Map", 4483362458)
+local ScriptTab = Window:CreateTab("More", 4483362458)
 
--- Infinite Stamina Toggle
+-- === FULLBRIGHT ===
+local originalBrightness, originalFogEnd, originalGlobalShadows = Lighting.Brightness, Lighting.FogEnd, Lighting.GlobalShadows
+PlayerTab:CreateToggle({
+   Name = "Fullbright",
+   CurrentValue = false,
+   Flag = "Fullbright",
+   Callback = function(v)
+      _G.fullbrightEnabled = v
+      pcall(function()
+         if v then
+            Lighting.Brightness = 2
+            Lighting.FogEnd = 1000000
+            Lighting.GlobalShadows = false
+         else
+            Lighting.Brightness = originalBrightness
+            Lighting.FogEnd = originalFogEnd
+            Lighting.GlobalShadows = originalGlobalShadows
+         end
+      end)
+   end
+})
+
+-- === INFINITE STAMINA & TPWALK ===
 PlayerTab:CreateToggle({
    Name = "Infinite Stamina",
    CurrentValue = true,
    Flag = "InfStamina",
-   Callback = function(Value)
-      _G.autoStamina = Value
+   Callback = function(v)
+      _G.autoStamina = v
       spawn(function()
          while _G.autoStamina do
-            local PlayerFolder = workspace.Game.Players:FindFirstChild(LocalPlayer.Name)
-            if PlayerFolder and PlayerFolder:FindFirstChild("Values") and PlayerFolder.Values:FindFirstChild("Stamina") then
-               PlayerFolder.Values.Stamina.Value = 100
-            end
+            pcall(function()
+               local pf = workspace.Game.Players:FindFirstChild(LocalPlayer.Name)
+               if pf and pf:FindFirstChild("Values") and pf.Values:FindFirstChild("Stamina") then
+                  pf.Values.Stamina.Value = 100
+               end
+            end)
             task.wait()
          end
       end)
-   end,
+   end
 })
 
--- Speed Boost Section
-local SpeedSection = PlayerTab:CreateSection("Speed Boost")
 _G.speedValue = 50
-PlayerTab:CreateInput({
-   Name = "Speed Value",
-   PlaceholderText = "Enter speed value",
-   RemoveTextAfterFocusLost = false,
-   Callback = function(Text)
-      local num = tonumber(Text)
-      if num then _G.speedValue = num end
-   end,
-})
-
+PlayerTab:CreateInput({Name="Speed Value", PlaceholderText="50", Callback=function(t) _G.speedValue=tonumber(t) or 50 end})
 PlayerTab:CreateToggle({
    Name = "TPWalk (Speed Boost)",
    CurrentValue = false,
    Flag = "TPWalk",
-   Callback = function(Value)
-      _G.tpWalkEnabled = Value
-      if not Value then return end
-      local Character = LocalPlayer.Character
-      local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
-      if not RootPart then return end
-      local lastPosition = RootPart.Position
+   Callback = function(v)
+      _G.tpWalkEnabled = v
+      if not v then return end
+      local lastPos = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position
       spawn(function()
          while _G.tpWalkEnabled do
-            local Character = LocalPlayer.Character
-            local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
-            if not RootPart then task.wait(0.1) continue end
-            local moveVector = Vector3.new(0,0,0)
-            local cam = workspace.CurrentCamera
-            local forward = cam.CFrame.LookVector
-            local right = cam.CFrame.RightVector
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveVector = moveVector + forward end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveVector = moveVector - forward end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveVector = moveVector - right end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveVector = moveVector + right end
-            if moveVector.Magnitude > 0 then
-               moveVector = moveVector.Unit
-               local newPos = lastPosition + (moveVector * _G.speedValue * 0.016)
-               RootPart.CFrame = CFrame.new(newPos, newPos + forward)
-               lastPosition = newPos
-            end
+            pcall(function()
+               local char = LocalPlayer.Character
+               local hrp = char and char:FindFirstChild("HumanoidRootPart")
+               if not hrp then task.wait(0.1) return end
+               local cam = workspace.CurrentCamera
+               local move = Vector3.new(0,0,0)
+               if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
+               if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
+               if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
+               if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
+               if move.Magnitude > 0 then
+                  move = move.Unit
+                  local newPos = (lastPos or hrp.Position) + move * _G.speedValue * 0.016
+                  hrp.CFrame = CFrame.new(newPos, newPos + cam.CFrame.LookVector)
+                  lastPos = newPos
+               end
+            end)
             task.wait()
          end
       end)
-   end,
+   end
 })
 
--- === PLAYER ESP ===
-local PlayerESPSection = PlayerTab:CreateSection("Player ESP")
-PlayerTab:CreateToggle({Name="Player ESP Enabled",CurrentValue=false,Flag="PESP",Callback=function(v) _G.playerEspEnabled=v end})
-PlayerTab:CreateToggle({Name="Player Chams",CurrentValue=false,Flag="PChams",Callback=function(v) _G.playerChamsEnabled=v end})
-PlayerTab:CreateToggle({Name="Player Box",CurrentValue=false,Flag="PBox",Callback=function(v) _G.playerBoxEnabled=v end})
-PlayerTab:CreateToggle({Name="Player Name",CurrentValue=false,Flag="PName",Callback=function(v) _G.playerNameEnabled=v end})
-PlayerTab:CreateToggle({Name="Player Line",CurrentValue=false,Flag="PLine",Callback=function(v) _G.playerLineEnabled=v end})
-PlayerTab:CreateToggle({Name="Player Team Check",CurrentValue=false,Flag="PTeam",Callback=function(v) _G.playerTeamCheck=v end})
+-- === ESP COLORS & TOGGLES ===
 local PlayerESPColor = Color3.fromRGB(255,0,0)
-PlayerTab:CreateColorPicker({Name="Player ESP Color",Color=PlayerESPColor,Callback=function(v) PlayerESPColor=v end})
-
--- === ITEM ESP ===
-local ItemESPSection = PlayerTab:CreateSection("Item ESP")
-PlayerTab:CreateToggle({Name="Item ESP Enabled",CurrentValue=false,Flag="IESP",Callback=function(v) _G.itemEspEnabled=v end})
-PlayerTab:CreateToggle({Name="Item Chams",CurrentValue=false,Flag="IChams",Callback=function(v) _G.itemChamsEnabled=v end})
-PlayerTab:CreateToggle({Name="Item Box",CurrentValue=false,Flag="IBox",Callback=function(v) _G.itemBoxEnabled=v end})
-PlayerTab:CreateToggle({Name="Item Name",CurrentValue=false,Flag="IName",Callback=function(v) _G.itemNameEnabled=v end})
-PlayerTab:CreateToggle({Name="Item Line",CurrentValue=false,Flag="ILine",Callback=function(v) _G.itemLineEnabled=v end})
 local ItemESPColor = Color3.fromRGB(0,255,0)
-PlayerTab:CreateColorPicker({Name="Item ESP Color",Color=ItemESPColor,Callback=function(v) ItemESPColor=v end})
-
--- === NOTEBOOK ESP ===
-local NotebookESPSection = PlayerTab:CreateSection("Notebook ESP")
-PlayerTab:CreateToggle({Name="Notebook ESP Enabled",CurrentValue=false,Flag="NESP",Callback=function(v) _G.notebookEspEnabled=v end})
-PlayerTab:CreateToggle({Name="Notebook Chams",CurrentValue=false,Flag="NChams",Callback=function(v) _G.notebookChamsEnabled=v end})
-PlayerTab:CreateToggle({Name="Notebook Box",CurrentValue=false,Flag="NBox",Callback=function(v) _G.notebookBoxEnabled=v end})
-PlayerTab:CreateToggle({Name="Notebook Name",CurrentValue=false,Flag="NName",Callback=function(v) _G.notebookNameEnabled=v end})
-PlayerTab:CreateToggle({Name="Notebook Line",CurrentValue=false,Flag="NLine",Callback=function(v) _G.notebookLineEnabled=v end})
 local NotebookESPColor = Color3.fromRGB(0,0,255)
-PlayerTab:CreateColorPicker({Name="Notebook ESP Color",Color=NotebookESPColor,Callback=function(v) NotebookESPColor=v end})
 
--- ESP Tables
+PlayerTab:CreateSection("Player ESP")
+PlayerTab:CreateToggle({Name="Player ESP Enabled",CurrentValue=false,Callback=function(v)_G.playerEspEnabled=v end})
+PlayerTab:CreateToggle({Name="Player Chams",CurrentValue=false,Callback=function(v)_G.playerChamsEnabled=v end})
+PlayerTab:CreateToggle({Name="Player Box",CurrentValue=false,Callback=function(v)_G.playerBoxEnabled=v end})
+PlayerTab:CreateToggle({Name="Player Name",CurrentValue=false,Callback=function(v)_G.playerNameEnabled=v end})
+PlayerTab:CreateToggle({Name="Player Line",CurrentValue=false,Callback=function(v)_G.playerLineEnabled=v end})
+PlayerTab:CreateToggle({Name="Player Team Check",CurrentValue=false,Callback=function(v)_G.playerTeamCheck=v end})
+PlayerTab:CreateColorPicker({Name="Player ESP Color",Color=PlayerESPColor,Callback=function(c)PlayerESPColor=c end})
+
+PlayerTab:CreateSection("Item ESP")
+PlayerTab:CreateToggle({Name="Item ESP Enabled",CurrentValue=false,Callback=function(v)_G.itemEspEnabled=v end})
+PlayerTab:CreateToggle({Name="Item Chams",CurrentValue=false,Callback=function(v)_G.itemChamsEnabled=v end})
+PlayerTab:CreateToggle({Name="Item Box",CurrentValue=false,Callback=function(v)_G.itemBoxEnabled=v end})
+PlayerTab:CreateToggle({Name="Item Name",CurrentValue=false,Callback=function(v)_G.itemNameEnabled=v end})
+PlayerTab:CreateToggle({Name="Item Line",CurrentValue=false,Callback=function(v)_G.itemLineEnabled=v end})
+PlayerTab:CreateColorPicker({Name="Item ESP Color",Color=ItemESPColor,Callback=function(c)ItemESPColor=c end})
+
+PlayerTab:CreateSection("Notebook ESP")
+PlayerTab:CreateToggle({Name="Notebook ESP Enabled",CurrentValue=false,Callback=function(v)_G.notebookEspEnabled=v end})
+PlayerTab:CreateToggle({Name="Notebook Chams",CurrentValue=false,Callback=function(v)_G.notebookChamsEnabled=v end})
+PlayerTab:CreateToggle({Name="Notebook Box",CurrentValue=false,Callback=function(v)_G.notebookBoxEnabled=v end})
+PlayerTab:CreateToggle({Name="Notebook Name",CurrentValue=false,Callback=function(v)_G.notebookNameEnabled=v end})
+PlayerTab:CreateToggle({Name="Notebook Line",CurrentValue=false,Callback=function(v)_G.notebookLineEnabled=v end})
+PlayerTab:CreateColorPicker({Name="Notebook ESP Color",Color=NotebookESPColor,Callback=function(c)NotebookESPColor=c end})
+
+-- === ESP TABLES ===
 local PlayerESPs, ItemESPs, NotebookESPs = {},{},{}
 
--- Create ESP functions
-local function CreatePlayerESP(p) 
-   if PlayerESPs[p] then return end
-   local h = Instance.new("Highlight",p) h.Name="Chams" h.FillTransparency=0.5 h.Enabled=false
-   local b = Drawing.new("Square") b.Thickness=2 b.Filled=false b.Visible=false
-   local n = Drawing.new("Text") n.Size=16 n.Center=true n.Outline=true n.Text=p.Name n.Visible=false
-   local t = Drawing.new("Line") t.Thickness=1 t.Visible=false
-   PlayerESPs[p] = {Highlight=h,Box=b,Name=n,Tracer=t}
+-- === CREATE ESP ===
+local function CreateESP(tbl, parent, colorVar, name)
+   if tbl[parent] then return end
+   local h = Instance.new("Highlight", parent)
+   h.Name = name.."Chams" h.FillTransparency = 0.5 h.Enabled = false
+   local box = Drawing.new("Square") box.Thickness = 2 box.Filled = false box.Visible = false
+   local txt = Drawing.new("Text") txt.Size = 16 txt.Center = true txt.Outline = true txt.Text = parent.Name txt.Visible = false
+   local line = Drawing.new("Line") line.Thickness = 1 line.Visible = false
+   tbl[parent] = {Highlight=h, Box=box, Name=txt, Tracer=line, ColorVar=colorVar}
 end
 
-local function CreateItemESP(i) 
-   if ItemESPs[i] then return end
-   local h = Instance.new("Highlight",i) h.Name="ItemChams" h.FillTransparency=0.5 h.Enabled=false
-   local b = Drawing.new("Square") b.Thickness=2 b.Filled=false b.Visible=false
-   local n = Drawing.new("Text") n.Size=16 n.Center=true n.Outline=true n.Text=i.Name n.Visible=false
-   local t = Drawing.new("Line") t.Thickness=1 t.Visible=false
-   ItemESPs[i] = {Highlight=h,Box=b,Name=n,Tracer=t}
-end
+local function CreatePlayerESP(p) CreateESP(PlayerESPs, p, PlayerESPColor, "Player") end
+local function CreateItemESP(i) CreateESP(ItemESPs, i, ItemESPColor, "Item") end
+local function CreateNotebookESP(n) CreateESP(NotebookESPs, n, NotebookESPColor, "Notebook") end
 
-local function CreateNotebookESP(n) 
-   if NotebookESPs[n] then return end
-   local h = Instance.new("Highlight",n) h.Name="NotebookChams" h.FillTransparency=0.5 h.Enabled=false
-   local b = Drawing.new("Square") b.Thickness=2 b.Filled=false b.Visible=false
-   local n = Drawing.new("Text") n.Size=16 n.Center=true n.Outline=true n.Text=n.Name n.Visible=false
-   local t = Drawing.new("Line") t.Thickness=1 t.Visible=false
-   NotebookESPs[n] = {Highlight=h,Box=b,Name=n,Tracer=t}
-end
-
--- Update ESP
+-- === UPDATE ESP ===
 local function UpdateAllESP()
-   -- Players
-   for obj,esp in pairs(PlayerESPs) do
-      if not obj or not obj.Parent then 
-         if esp.Box then esp.Box:Remove() end 
-         if esp.Name then esp.Name:Remove() end 
-         if esp.Tracer then esp.Tracer:Remove() end 
-         if esp.Highlight then esp.Highlight:Destroy() end 
-         PlayerESPs[obj]=nil 
-         continue 
-      end
-      local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso")
-      local head = obj:FindFirstChild("Head")
-      local hum = obj:FindFirstChild("Humanoid")
-      if not (hrp and head and hum and hum.Health>0 and obj.Name~=LocalPlayer.Name) then
-         esp.Box.Visible=false esp.Name.Visible=false esp.Tracer.Visible=false esp.Highlight.Enabled=false continue
-      end
-      local teammate = _G.playerTeamCheck and Players[obj.Name] and Players[obj.Name].Team==LocalPlayer.Team
-      if not _G.playerEspEnabled or teammate then
-         esp.Box.Visible=false esp.Name.Visible=false esp.Tracer.Visible=false esp.Highlight.Enabled=false continue
-      end
-      esp.Highlight.FillColor=PlayerESPColor esp.Highlight.OutlineColor=PlayerESPColor
-      esp.Box.Color=PlayerESPColor esp.Name.Color=PlayerESPColor esp.Tracer.Color=PlayerESPColor
-      esp.Highlight.Enabled=_G.playerChamsEnabled
-      local pos,onScreen = Camera:WorldToViewportPoint(hrp.Position)
-      if onScreen then
-         if _G.playerBoxEnabled then
-            local top = Camera:WorldToViewportPoint(head.Position+Vector3.new(0,0.5,0))
-            local bot = Camera:WorldToViewportPoint(hrp.Position-Vector3.new(0,4,0))
-            esp.Box.Size=Vector2.new(2000/pos.Z,top.Y-bot.Y)
-            esp.Box.Position=Vector2.new(pos.X-esp.Box.Size.X/2,bot.Y)
-            esp.Box.Visible=true
-         else esp.Box.Visible=false end
-         if _G.playerNameEnabled then esp.Name.Position=Vector2.new(pos.X,pos.Y-20) esp.Name.Visible=true else esp.Name.Visible=false end
-         if _G.playerLineEnabled then esp.Tracer.From=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y) esp.Tracer.To=Vector2.new(pos.X,pos.Y) esp.Tracer.Visible=true else esp.Tracer.Visible=false end
-      else
-         esp.Box.Visible=false esp.Name.Visible=false esp.Tracer.Visible=false esp.Highlight.Enabled=false
-      end
-   end
-
-   -- Items
-   for obj,esp in pairs(ItemESPs) do
-      if not obj or not obj.Parent then 
-         if esp.Box then esp.Box:Remove() end 
-         if esp.Name then esp.Name:Remove() end 
-         if esp.Tracer then esp.Tracer:Remove() end 
-         if esp.Highlight then esp.Highlight:Destroy() end 
-         ItemESPs[obj]=nil 
-         continue 
-      end
-      local part = obj:FindFirstChild("InteractionHitbox") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-      if not part then continue end
-      if not _G.itemEspEnabled then esp.Box.Visible=false esp.Name.Visible=false esp.Tracer.Visible=false esp.Highlight.Enabled=false continue end
-      esp.Highlight.FillColor=ItemESPColor esp.Highlight.OutlineColor=ItemESPColor
-      esp.Box.Color=ItemESPColor esp.Name.Color=ItemESPColor esp.Tracer.Color=ItemESPColor
-      esp.Highlight.Enabled=_G.itemChamsEnabled
-      local pos,onScreen = Camera:WorldToViewportPoint(part.Position)
-      if onScreen then
-         if _G.itemBoxEnabled then
-            local s = part.Size or Vector3.new(1,1,1)
-            local top = Camera:WorldToViewportPoint(part.Position+Vector3.new(0,s.Y/2,0))
-            local bot = Camera:WorldToViewportPoint(part.Position-Vector3.new(0,s.Y/2,0))
-            esp.Box.Size=Vector2.new(2000/pos.Z*s.X,top.Y-bot.Y)
-            esp.Box.Position=Vector2.new(pos.X-esp.Box.Size.X/2,bot.Y)
-            esp.Box.Visible=true
-         else esp.Box.Visible=false end
-         if _G.itemNameEnabled then esp.Name.Position=Vector2.new(pos.X,pos.Y-20) esp.Name.Visible=true else esp.Name.Visible=false end
-         if _G.itemLineEnabled then esp.Tracer.From=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y) esp.Tracer.To=Vector2.new(pos.X,pos.Y) esp.Tracer.Visible=true else esp.Tracer.Visible=false end
-      else
-         esp.Box.Visible=false esp.Name.Visible=false esp.Tracer.Visible=false esp.Highlight.Enabled=false
-      end
-   end
-
-   -- Notebooks
-   for obj,esp in pairs(NotebookESPs) do
-      if not obj or not obj.Parent then 
-         if esp.Box then esp.Box:Remove() end 
-         if esp.Name then esp.Name:Remove() end 
-         if esp.Tracer then esp.Tracer:Remove() end 
-         if esp.Highlight then esp.Highlight:Destroy() end 
-         NotebookESPs[obj]=nil 
-         continue 
-      end
-      local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-      if not part then continue end
-      if not _G.notebookEspEnabled then esp.Box.Visible=false esp.Name.Visible=false esp.Tracer.Visible=false esp.Highlight.Enabled=false continue end
-      esp.Highlight.FillColor=NotebookESPColor esp.Highlight.OutlineColor=NotebookESPColor
-      esp.Box.Color=NotebookESPColor esp.Name.Color=NotebookESPColor esp.Tracer.Color=NotebookESPColor
-      esp.Highlight.Enabled=_G.notebookChamsEnabled
-      local pos,onScreen = Camera:WorldToViewportPoint(part.Position)
-      if onScreen then
-         if _G.notebookBoxEnabled then
-            local s = part.Size or Vector3.new(1,1,1)
-            local top = Camera:WorldToViewportPoint(part.Position+Vector3.new(0,s.Y/2,0))
-            local bot = Camera:WorldToViewportPoint(part.Position-Vector3.new(0,s.Y/2,0))
-            esp.Box.Size=Vector2.new(2000/pos.Z*s.X,top.Y-bot.Y)
-            esp.Box.Position=Vector2.new(pos.X-esp.Box.Size.X/2,bot.Y)
-            esp.Box.Visible=true
-         else esp.Box.Visible=false end
-         if _G.notebookNameEnabled then esp.Name.Position=Vector2.new(pos.X,pos.Y-20) esp.Name.Visible=true else esp.Name.Visible=false end
-         if _G.notebookLineEnabled then esp.Tracer.From=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y) esp.Tracer.To=Vector2.new(pos.X,pos.Y) esp.Tracer.Visible=true else esp.Tracer.Visible=false end
-      else
-         esp.Box.Visible=false esp.Name.Visible=false esp.Tracer.Visible=false esp.Highlight.Enabled=false
-      end
-   end
-end
-
--- Connect ESP creation
-local function ConnectFolder(folder, createFunc)
-   if folder then
-      folder.ChildAdded:Connect(createFunc)
-      for _,v in folder:GetChildren() do createFunc(v) end
-   end
-end
-
--- Wait for folders and connect
-spawn(function()
-   local itemFolder = workspace.Game.Map:WaitForChild("Item", 10)
-   local notebookFolder = workspace.Game.Map:WaitForChild("Notebooks", 10)
-   ConnectFolder(itemFolder, CreateItemESP)
-   ConnectFolder(notebookFolder, CreateNotebookESP)
-end)
-
-workspace.Game.Players.ChildAdded:Connect(CreatePlayerESP)
-for _,v in workspace.Game.Players:GetChildren() do CreatePlayerESP(v) end
-
-RunService.RenderStepped:Connect(UpdateAllESP)
-
--- === MAP TAB ===
-local MapTab = Window:CreateTab("Map", 4483362458)
-
--- Fixed item list function with wait
-local function GetAllItems()
-   local list = {}
    pcall(function()
-      local folder = workspace.Game.Map:WaitForChild("Item", 10)
-      if folder then
-         task.wait(1) -- Extra wait for items to fully load
-         for _,obj in pairs(folder:GetChildren()) do
-            if obj:IsA("Model") or obj:IsA("BasePart") then
-               table.insert(list, obj.Name)
-            end
+      local cam = workspace.CurrentCamera
+      local gameFolder = workspace:FindFirstChild("Game")
+      if not gameFolder then return end
+      local map = gameFolder:FindFirstChild("Map")
+      if not map then return end
+      local itemFolder = map:FindFirstChild("Item")
+      local notebookFolder = map:FindFirstChild("Notebooks")
+
+      -- Update Player ESP
+      if _G.playerEspEnabled then
+         for _, player in pairs(workspace.Game.Players:GetChildren()) do
+            if not PlayerESPs[player] and player.Name ~= LocalPlayer.Name then CreatePlayerESP(player) end
+         end
+      end
+      for obj, e in pairs(PlayerESPs) do
+         if not obj or not obj.Parent or not _G.playerEspEnabled then
+            e.Box:Remove() e.Name:Remove() e.Tracer:Remove() e.Highlight:Destroy() PlayerESPs[obj]=nil
+            continue
+         end
+         local hrp = obj:FindFirstChild("HumanoidRootPart")
+         local head = obj:FindFirstChild("Head")
+         local hum = obj:FindFirstChild("Humanoid")
+         if not (hrp and head and hum and hum.Health > 0 and obj.Name ~= LocalPlayer.Name) then
+            e.Box.Visible = false e.Name.Visible = false e.Tracer.Visible = false e.Highlight.Enabled = false
+            continue
+         end
+         if _G.playerTeamCheck and Players[obj.Name] and Players[obj.Name].Team == LocalPlayer.Team then
+            e.Box.Visible = false e.Name.Visible = false e.Tracer.Visible = false e.Highlight.Enabled = false
+            continue
+         end
+         e.Highlight.FillColor = PlayerESPColor e.Highlight.OutlineColor = PlayerESPColor
+         e.Box.Color = PlayerESPColor e.Name.Color = PlayerESPColor e.Tracer.Color = PlayerESPColor
+         e.Highlight.Enabled = _G.playerChamsEnabled
+
+         local pos, onScreen = cam:WorldToViewportPoint(hrp.Position)
+         if onScreen then
+            if _G.playerBoxEnabled then
+               local top = cam:WorldToViewportPoint(head.Position + Vector3.new(0,0.5,0)).Y
+               local bot = cam:WorldToViewportPoint(hrp.Position - Vector3.new(0,4,0)).Y
+               e.Box.Size = Vector2.new(2000/pos.Z, top-bot)
+               e.Box.Position = Vector2.new(pos.X - e.Box.Size.X/2, bot)
+               e.Box.Visible = true
+            else e.Box.Visible = false end
+            if _G.playerNameEnabled then e.Name.Position = Vector2.new(pos.X, pos.Y-20) e.Name.Visible = true else e.Name.Visible = false end
+            if _G.playerLineEnabled then e.Tracer.From = Vector2.new(cam.ViewportSize.X/2, cam.ViewportSize.Y) e.Tracer.To = Vector2.new(pos.X, pos.Y) e.Tracer.Visible = true else e.Tracer.Visible = false end
+         else
+            e.Box.Visible = false e.Name.Visible = false e.Tracer.Visible = false e.Highlight.Enabled = false
+         end
+      end
+
+      -- Update Item ESP
+      if itemFolder and _G.itemEspEnabled then
+         for _, item in pairs(itemFolder:GetChildren()) do
+            if item.Name ~= "SwappingPlots" and not ItemESPs[item] then CreateItemESP(item) end
+         end
+      end
+      for obj, e in pairs(ItemESPs) do
+         if not obj or not obj.Parent or not _G.itemEspEnabled or obj.Name == "SwappingPlots" then
+            e.Box:Remove() e.Name:Remove() e.Tracer:Remove() e.Highlight:Destroy() ItemESPs[obj]=nil
+            continue
+         end
+         local part = obj:FindFirstChild("InteractionHitbox")
+         if not part then
+            Rayfield:Notify({Title="Item ESP Error",Content="No InteractionHitbox for "..obj.Name,Duration=3})
+            continue
+         end
+         local pos = part.Position
+         e.Highlight.FillColor = ItemESPColor e.Highlight.OutlineColor = ItemESPColor
+         e.Box.Color = ItemESPColor e.Name.Color = ItemESPColor e.Tracer.Color = ItemESPColor
+         e.Highlight.Enabled = _G.itemChamsEnabled
+
+         local screenPos, onScreen = cam:WorldToViewportPoint(pos)
+         if onScreen then
+            if _G.itemBoxEnabled then
+               local s = part.Size or Vector3.new(1,1,1)
+               local top = cam:WorldToViewportPoint(pos + Vector3.new(0,s.Y/2,0)).Y
+               local bot = cam:WorldToViewportPoint(pos - Vector3.new(0,s.Y/2,0)).Y
+               e.Box.Size = Vector2.new(2000/screenPos.Z * s.X, top-bot)
+               e.Box.Position = Vector2.new(screenPos.X - e.Box.Size.X/2, bot)
+               e.Box.Visible = true
+            else e.Box.Visible = false end
+            if _G.itemNameEnabled then e.Name.Position = Vector2.new(screenPos.X, screenPos.Y-20) e.Name.Visible = true else e.Name.Visible = false end
+            if _G.itemLineEnabled then e.Tracer.From = Vector2.new(cam.ViewportSize.X/2, cam.ViewportSize.Y) e.Tracer.To = Vector2.new(screenPos.X, screenPos.Y) e.Tracer.Visible = true else e.Tracer.Visible = false end
+         else
+            e.Box.Visible = false e.Name.Visible = false e.Tracer.Visible = false e.Highlight.Enabled = false
+         end
+      end
+
+      -- Update Notebook ESP
+      if notebookFolder and _G.notebookEspEnabled then
+         for _, notebook in pairs(notebookFolder:GetChildren()) do
+            if not NotebookESPs[notebook] then CreateNotebookESP(notebook) end
+         end
+      end
+      for obj, e in pairs(NotebookESPs) do
+         if not obj or not obj.Parent or not _G.notebookEspEnabled then
+            e.Box:Remove() e.Name:Remove() e.Tracer:Remove() e.Highlight:Destroy() NotebookESPs[obj]=nil
+            continue
+         end
+         local part = obj:FindFirstChild("InteractionHitbox") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart") or obj
+         local pos = (part:IsA("BasePart") and part.Position) or obj:GetPivot().Position
+         if not pos then
+            Rayfield:Notify({Title="Notebook ESP Error",Content="No position for "..obj.Name,Duration=3})
+            continue
+         end
+         e.Highlight.FillColor = NotebookESPColor e.Highlight.OutlineColor = NotebookESPColor
+         e.Box.Color = NotebookESPColor e.Name.Color = NotebookESPColor e.Tracer.Color = NotebookESPColor
+         e.Highlight.Enabled = _G.notebookChamsEnabled
+
+         local screenPos, onScreen = cam:WorldToViewportPoint(pos)
+         if onScreen then
+            if _G.notebookBoxEnabled then
+               local s = (part:IsA("BasePart") and part.Size) or Vector3.new(1,1,1)
+               local top = cam:WorldToViewportPoint(pos + Vector3.new(0,s.Y/2,0)).Y
+               local bot = cam:WorldToViewportPoint(pos - Vector3.new(0,s.Y/2,0)).Y
+               e.Box.Size = Vector2.new(2000/screenPos.Z * s.X, top-bot)
+               e.Box.Position = Vector2.new(screenPos.X - e.Box.Size.X/2, bot)
+               e.Box.Visible = true
+            else e.Box.Visible = false end
+            if _G.notebookNameEnabled then e.Name.Position = Vector2.new(screenPos.X, screenPos.Y-20) e.Name.Visible = true else e.Name.Visible = false end
+            if _G.notebookLineEnabled then e.Tracer.From = Vector2.new(cam.ViewportSize.X/2, cam.ViewportSize.Y) e.Tracer.To = Vector2.new(screenPos.X, screenPos.Y) e.Tracer.Visible = true else e.Tracer.Visible = false end
+         else
+            e.Box.Visible = false e.Name.Visible = false e.Tracer.Visible = false e.Highlight.Enabled = false
          end
       end
    end)
-   return list
 end
 
--- Initial load with wait
+RunService.RenderStepped:Connect(UpdateAllESP)
+
+-- === DYNAMIC MAP HANDLING ===
+local function ClearAll()
+   for _,e in pairs(ItemESPs) do e.Highlight:Destroy() e.Box:Remove() e.Name:Remove() e.Tracer:Remove() end
+   for _,e in pairs(NotebookESPs) do e.Highlight:Destroy() e.Box:Remove() e.Name:Remove() e.Tracer:Remove() end
+   ItemESPs, NotebookESPs = {}, {}
+   ItemDropdown:Refresh({"Waiting for new map..."}, true)
+   _G.selectedItem = nil
+end
+
+local function SetupMap(map)
+   ClearAll() -- Clear old data
+   pcall(function()
+      local itemFolder = map:FindFirstChild("Item") or map:WaitForChild("Item", 5)
+      local notebookFolder = map:FindFirstChild("Notebooks") or map:WaitForChild("Notebooks", 5)
+
+      if itemFolder then
+         itemFolder.ChildAdded:Connect(function(child)
+            if child.Name ~= "SwappingPlots" and child:FindFirstChild("InteractionHitbox") then
+               CreateItemESP(child)
+               Rayfield:Notify({Title="Item Added",Content=child.Name.." added to ESP",Duration=2})
+               MapTab:CreateButton({Name="Refresh Items",Callback=function() end})() -- Auto-refresh dropdown
+            end
+         end)
+         itemFolder.ChildRemoved:Connect(function(c)
+            if ItemESPs[c] then
+               ItemESPs[c].Highlight:Destroy()
+               ItemESPs[c].Box:Remove()
+               ItemESPs[c].Name:Remove()
+               ItemESPs[c].Tracer:Remove()
+               ItemESPs[c]=nil
+               Rayfield:Notify({Title="Item Removed",Content=c.Name.." removed from ESP",Duration=2})
+               MapTab:CreateButton({Name="Refresh Items",Callback=function() end})() -- Auto-refresh dropdown
+            end
+         end)
+         for _,v in pairs(itemFolder:GetChildren()) do
+            if v.Name ~= "SwappingPlots" and v:FindFirstChild("InteractionHitbox") then CreateItemESP(v) end
+         end
+      else
+         Rayfield:Notify({Title="Warning",Content="Item folder not found in map!",Duration=3})
+      end
+
+      if notebookFolder then
+         notebookFolder.ChildAdded:Connect(function(child)
+            CreateNotebookESP(child)
+            Rayfield:Notify({Title="Notebook Added",Content=child.Name.." added to ESP",Duration=2})
+         end)
+         notebookFolder.ChildRemoved:Connect(function(c)
+            if NotebookESPs[c] then
+               NotebookESPs[c].Highlight:Destroy()
+               NotebookESPs[c].Box:Remove()
+               NotebookESPs[c].Name:Remove()
+               NotebookESPs[c].Tracer:Remove()
+               NotebookESPs[c]=nil
+               Rayfield:Notify({Title="Notebook Removed",Content=c.Name.." removed from ESP",Duration=2})
+            end
+         end)
+         for _,v in pairs(notebookFolder:GetChildren()) do CreateNotebookESP(v) end
+      else
+         Rayfield:Notify({Title="Warning",Content="Notebooks folder not found in map!",Duration=3})
+      end
+
+      -- Initial item load
+      local items = {}
+      if itemFolder then
+         for _,obj in pairs(itemFolder:GetChildren()) do
+            if obj.Parent and obj.Name ~= "SwappingPlots" and obj:FindFirstChild("InteractionHitbox") then
+               table.insert(items, obj.Name)
+            end
+         end
+      end
+      ItemDropdown:Refresh(items, true)
+      if #items > 0 then
+         _G.selectedItem = items[1]
+         ItemDropdown:Set(items[1])
+         Rayfield:Notify({Title="Items Loaded",Content=#items.." items found!",Duration=2})
+      else
+         ItemDropdown:Refresh({"No items yet"}, true)
+         Rayfield:Notify({Title="Info",Content="No items found in current map!",Duration=2})
+      end
+   end)
+end
+
+-- Monitor map changes
+local connections = {}
+local function DisconnectAll()
+   for _, conn in pairs(connections) do conn:Disconnect() end
+   connections = {}
+end
+
 spawn(function()
-   task.wait(3) -- Wait for map to fully load
-   local items = GetAllItems()
-   ItemDropdown:Refresh(items, true)
-   if #items > 0 then
-      _G.selectedItem = items[1]
-      ItemDropdown:Set(items[1])
+   while true do
+      pcall(function()
+         local gameFolder = workspace:WaitForChild("Game", 5)
+         if not gameFolder then
+            Rayfield:Notify({Title="Error",Content="Game folder not found, retrying...",Duration=3})
+            ClearAll()
+            return
+         end
+         local map = gameFolder:FindFirstChild("Map") or gameFolder:WaitForChild("Map", 5)
+         if map then
+            SetupMap(map)
+            local mapConnection = map.AncestryChanged:Connect(function()
+               if not map.Parent then
+                  DisconnectAll()
+                  ClearAll()
+                  Rayfield:Notify({Title="Map Changed",Content="Old map removed, waiting for new map...",Duration=3})
+               end
+            end)
+            local childRemovedConnection = map.ChildRemoved:Connect(function(child)
+               if child.Name == "Item" or child.Name == "Notebooks" then
+                  ClearAll()
+                  Rayfield:Notify({Title="Folder Removed",Content=child.Name.." folder removed, resetting...",Duration=3})
+               end
+            end)
+            table.insert(connections, mapConnection)
+            table.insert(connections, childRemovedConnection)
+         else
+            Rayfield:Notify({Title="Error",Content="Map not found, retrying...",Duration=3})
+            ClearAll()
+         end
+         local addedConnection = gameFolder.ChildAdded:Connect(function(child)
+            if child.Name == "Map" then
+               DisconnectAll()
+               ClearAll()
+               SetupMap(child)
+               Rayfield:Notify({Title="New Map",Content="New map detected, initializing...",Duration=3})
+            end
+         end)
+         local gameFolderConnection = gameFolder.AncestryChanged:Connect(function()
+            if not gameFolder.Parent then
+               DisconnectAll()
+               ClearAll()
+               Rayfield:Notify({Title="Game Folder Removed",Content="Game folder gone, resetting...",Duration=3})
+            end
+         end)
+         table.insert(connections, addedConnection)
+         table.insert(connections, gameFolderConnection)
+      end)
+      task.wait(0.1) -- Faster check for map changes
    end
 end)
 
--- Dropdown
+-- Players
+pcall(function()
+   local playersFolder = workspace:FindFirstChild("Game") and workspace.Game:FindFirstChild("Players")
+   if playersFolder then
+      playersFolder.ChildAdded:Connect(CreatePlayerESP)
+      for _,v in pairs(playersFolder:GetChildren()) do CreatePlayerESP(v) end
+   end
+end)
+
+-- === MAP TAB - ITEM LIST & TP ===
 local ItemDropdown = MapTab:CreateDropdown({
    Name = "Select Item",
-   Options = {"Loading..."},
-   CurrentOption = "Loading...",
-   Flag = "SelItem",
-   Callback = function(opt) _G.selectedItem = opt end
+   Options = {"Waiting for map..."},
+   CurrentOption = "Waiting for map...",
+   Callback = function(v) _G.selectedItem = v end
 })
 
--- Refresh button (NOW WORKS with better checks)
 MapTab:CreateButton({
    Name = "Refresh Items",
    Callback = function()
       Rayfield:Notify({Title="Loading",Content="Scanning for items...",Duration=1})
-      local items = GetAllItems()
+      local items = {}
+      pcall(function()
+         local gameFolder = workspace:FindFirstChild("Game")
+         if not gameFolder then
+            Rayfield:Notify({Title="Error",Content="Game folder not found!",Duration=3})
+            return
+         end
+         local map = gameFolder:FindFirstChild("Map")
+         if not map then
+            Rayfield:Notify({Title="Error",Content="Map not loaded yet!",Duration=3})
+            return
+         end
+         local folder = map:FindFirstChild("Item")
+         if not folder then
+            Rayfield:Notify({Title="Error",Content="Item folder not found!",Duration=3})
+            return
+         end
+         for _,obj in pairs(folder:GetChildren()) do
+            if obj.Parent and obj.Name ~= "SwappingPlots" and obj:FindFirstChild("InteractionHitbox") then
+               table.insert(items, obj.Name)
+            end
+         end
+      end)
       if #items > 0 then
          ItemDropdown:Refresh(items, true)
          _G.selectedItem = items[1]
          ItemDropdown:Set(items[1])
-         Rayfield:Notify({Title="Success",Content=#items.." items loaded!",Duration=2})
+         Rayfield:Notify({Title="Success",Content=#items.." items found!",Duration=2})
       else
-         ItemDropdown:Refresh({"No items found"}, true)
+         ItemDropdown:Refresh({"No items yet"}, true)
          _G.selectedItem = nil
-         Rayfield:Notify({Title="Info",Content="No items in map yet. Try again later.",Duration=2})
+         Rayfield:Notify({Title="Info",Content="No items found. Try again!",Duration=2})
       end
-   end,
+   end
 })
 
--- Get Item (TP to item, NO TP BACK)
 MapTab:CreateButton({
-   Name = "Get Selected Item",
+   Name = "Get Selected Item (TP TO ITEM)",
    Callback = function()
-      if _G.selectedItem and workspace.Game.Map:FindFirstChild("Item") and workspace.Game.Map.Item:FindFirstChild(_G.selectedItem) then
-         local item = workspace.Game.Map.Item[_G.selectedItem]
-         local part = item:FindFirstChild("InteractionHitbox") or item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
-         if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(part.Position + Vector3.new(0, 3, 0)) -- Slight Y offset to avoid clipping
-            Rayfield:Notify({Title="Teleported",Content="You are now at ".._G.selectedItem,Duration=2})
-         else
-            Rayfield:Notify({Title="Error",Content="Item has no valid part!",Duration=3})
+      pcall(function()
+         if not _G.selectedItem or _G.selectedItem == "No items yet" or _G.selectedItem == "Waiting for new map..." then
+            Rayfield:Notify({Title="Error",Content="No item selected!",Duration=3})
+            return
          end
-      else
-         Rayfield:Notify({Title="Error",Content="Select valid item first or map not loaded!",Duration=3})
-      end
-   end,
+         local gameFolder = workspace:FindFirstChild("Game")
+         if not gameFolder then
+            Rayfield:Notify({Title="Error",Content="Game folder not found!",Duration=3})
+            return
+         end
+         local map = gameFolder:FindFirstChild("Map")
+         if not map then
+            Rayfield:Notify({Title="Error",Content="Map not found!",Duration=3})
+            return
+         end
+         local itemFolder = map:FindFirstChild("Item")
+         if not itemFolder then
+            Rayfield:Notify({Title="Error",Content="Item folder not found!",Duration=3})
+            return
+         end
+         local item = itemFolder:FindFirstChild(_G.selectedItem)
+         if not item or not item.Parent or item.Name == "SwappingPlots" then
+            Rayfield:Notify({Title="Error",Content="Item '".._G.selectedItem.."' not found or invalid!",Duration=3})
+            MapTab:CreateButton({Name="Refresh Items",Callback=function() end})() -- Auto-refresh
+            return
+         end
+         local interactionHitbox = item:FindFirstChild("InteractionHitbox")
+         if not interactionHitbox then
+            Rayfield:Notify({Title="Error",Content="No InteractionHitbox for '".._G.selectedItem.."'!",Duration=3})
+            return
+         end
+         local itemCFrame = interactionHitbox.CFrame
+         local char = LocalPlayer.Character
+         local hrp = char and char:FindFirstChild("HumanoidRootPart")
+         if not hrp then
+            Rayfield:Notify({Title="Error",Content="Player character not ready!",Duration=3})
+            return
+         end
+         hrp.CFrame = itemCFrame + Vector3.new(0, 6, 0) -- Offset by 6 studs upward
+         Rayfield:Notify({Title="Teleported!",Content="You are at ".._G.selectedItem,Duration=2})
+      end)
+   end
 })
 
--- Remove Doors (Improved detection)
 MapTab:CreateButton({
    Name = "Remove All Doors",
    Callback = function()
       pcall(function()
-         local map = workspace.Game:FindFirstChild("Map")
-         if map then
-            for _,obj in pairs(map:GetChildren()) do
-               if obj.Name:lower():find("door") or obj:IsA("Model") and obj:FindFirstChild("Door") then
-                  obj:Destroy()
-               end
-            end
-            Rayfield:Notify({Title="Success",Content="All doors removed!",Duration=2})
-         else
-            Rayfield:Notify({Title="Error",Content="Map not found!",Duration=2})
+         local gameFolder = workspace:FindFirstChild("Game")
+         if not gameFolder then
+            Rayfield:Notify({Title="Error",Content="Game folder not found!",Duration=3})
+            return
          end
+         local map = gameFolder:FindFirstChild("Map")
+         if not map then
+            Rayfield:Notify({Title="Error",Content="Map not found!",Duration=3})
+            return
+         end
+         local count = 0
+         for _,v in pairs(map:GetDescendants()) do
+            if v.Name:lower():find("door") or v.Name == "Door" then
+               v:Destroy()
+               count = count + 1
+            end
+         end
+         Rayfield:Notify({Title="Success",Content="Removed "..count.." doors!",Duration=3})
       end)
-   end,
+   end
 })
 
-local ScriptTab = Window:CreateTab("More", 4483362458) -- Title, Image
-
-local Button = ScriptTab:CreateButton({
-   Name = "lnfinite yield",
+-- === MORE TAB ===
+ScriptTab:CreateButton({
+   Name = "Infinite Yield",
    Callback = function()
-   loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-   end,
+      loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+   end
 })
