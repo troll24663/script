@@ -1,24 +1,4 @@
--- Sub ScriptTrol. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- Sub ScriptTrol
 
 
 
@@ -96,9 +76,9 @@ PlayerTab:CreateToggle({
       _G.autoStamina = v
       spawn(function()
          while _G.autoStamina do
-            local PlayerFolder = workspace.Game.Players:FindFirstChild(LocalPlayer.Name)
-            if PlayerFolder and PlayerFolder:FindFirstChild("Values") and PlayerFolder.Values:FindFirstChild("Stamina") then
-               PlayerFolder.Values.Stamina.Value = 100
+            local pf = workspace.Game.Players:FindFirstChild(LocalPlayer.Name)
+            if pf and pf:FindFirstChild("Values") and pf.Values:FindFirstChild("Stamina") then
+               pf.Values.Stamina.Value = 100
             end
             task.wait()
          end
@@ -243,7 +223,11 @@ local function UpdateAllESP()
             e.Box.Visible = false e.Name.Visible = false e.Tracer.Visible = false e.Highlight.Enabled = false
             continue
          end
-         if _G.playerTeamCheck and Players[obj.Name] and Players[obj.Name].Team == LocalPlayer.Team then
+         local isTeammate = false
+         pcall(function()
+            isTeammate = Players[obj.Name].Team == LocalPlayer.Team
+         end)
+         if _G.playerTeamCheck and isTeammate then
             e.Box.Visible = false e.Name.Visible = false e.Tracer.Visible = false e.Highlight.Enabled = false
             continue
          end
@@ -272,9 +256,15 @@ local function UpdateAllESP()
          for _, item in pairs(itemFolder:GetChildren()) do
             if item.Name ~= "SwappingPlots" and not ItemESPs[item] then CreateItemESP(item) end
          end
+         local swappingPlots = itemFolder:FindFirstChild("SwappingPlots")
+         if swappingPlots then
+            for _, subItem in pairs(swappingPlots:GetChildren()) do
+               if not ItemESPs[subItem] then CreateItemESP(subItem) end
+            end
+         end
       end
       for obj, e in pairs(ItemESPs) do
-         if not obj or not obj.Parent or not _G.itemEspEnabled or obj.Name == "SwappingPlots" then
+         if not obj or not obj.Parent or not _G.itemEspEnabled then
             e.Box:Remove() e.Name:Remove() e.Tracer:Remove() e.Highlight:Destroy() ItemESPs[obj]=nil
             continue
          end
@@ -364,6 +354,7 @@ local function SetupMap(map)
          itemFolder.ChildAdded:Connect(function(child)
             if child.Name ~= "SwappingPlots" and child:FindFirstChild("InteractionHitbox") then
                CreateItemESP(child)
+               MapTab:CreateButton({Name="Refresh Items",Callback=function() end})() -- Auto-refresh dropdown
             end
          end)
          itemFolder.ChildRemoved:Connect(function(c)
@@ -373,6 +364,7 @@ local function SetupMap(map)
                ItemESPs[c].Name:Remove()
                ItemESPs[c].Tracer:Remove()
                ItemESPs[c]=nil
+               MapTab:CreateButton({Name="Refresh Items",Callback=function() end})() -- Auto-refresh dropdown
             end
          end)
          for _,v in pairs(itemFolder:GetChildren()) do
@@ -425,7 +417,7 @@ end
 spawn(function()
    while true do
       pcall(function()
-         local gameFolder = workspace:FindFirstChild("Game")
+         local gameFolder = workspace:WaitForChild("Game", 5)
          if not gameFolder then
             ClearAll()
             return
@@ -555,27 +547,6 @@ MapTab:CreateButton({
             return
          end
          hrp.CFrame = itemCFrame + Vector3.new(0, 6, 0) -- Offset by 6 studs upward
-      end)
-   end
-})
-
-MapTab:CreateButton({
-   Name = "Remove All Doors",
-   Callback = function()
-      pcall(function()
-         local gameFolder = workspace:FindFirstChild("Game")
-         if not gameFolder then
-            return
-         end
-         local map = gameFolder:FindFirstChild("Map")
-         if not map then
-            return
-         end
-         for _,v in pairs(map:GetDescendants()) do
-            if v.Name:lower():find("door") or v.Name == "Door" then
-               v:Destroy()
-            end
-         end
       end)
    end
 })
