@@ -531,11 +531,6 @@ MapTab:CreateButton({
          if not itemFolder then
             return
          end
-         local item = itemFolder:FindFirstChild(_G.selectedItem)
-         if not item or not item.Parent or item.Name == "SwappingPlots" then
-            MapTab:CreateButton({Name="Refresh Items",Callback=function() end})() -- Auto-refresh
-            return
-         end
          local interactionHitbox = item:FindFirstChild("InteractionHitbox")
          if not interactionHitbox then
             return
