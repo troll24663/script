@@ -1,0 +1,495 @@
+--[[
+    FIX!!!!
+
+	how use :
+	first execute the script
+	type u id, tool name, dist and volume
+	see the text is success?
+	equip u success tool
+	
+	uh. how know tool name?
+	
+	i can say "IDK"
+]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ULTIMATE SOUND EDITOR: ANY TOOL, INF VOL/DIST/LOOP 🔥
+-- Execute in your Roblox executor (as local script).
+
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Globals
+local targetToolName = "Tool Name"
+local targetSoundId = 96812789855208
+local targetVolume = 1
+local targetLoop = false
+local targetDistMin = 10
+local targetDistMax = 25
+local equipConnection = nil
+local backpackConnection = nil
+
+-- Parse Dist helper
+local function parseDist(str)
+    if not str or str == "" then return nil end
+    local parts = {}
+    for part in string.gmatch(str, "([^,]+)") do
+        local trimmed = string.match(part, "^%s*(.-)%s*$")
+        local lower = string.lower(trimmed)
+        if lower == "inf" or lower == "math.huge" then
+            table.insert(parts, math.huge)
+        else
+            local num = tonumber(trimmed)
+            if num then table.insert(parts, num) end
+        end
+    end
+    return (#parts == 2) and parts or nil
+end
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+screenGui.Name = "SoundEditorGui"
+screenGui.ResetOnSpawn = false
+
+-- Create Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 280, 0, 390)
+frame.Position = UDim2.new(0.5, -140, 0.5, -195)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = frame
+
+-- Draggable
+local dragging, dragInput, dragStart, startPos
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input == dragInput then updateInput(input) end
+end)
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "🚀 Tool's Equipped Sound (ID)"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 18
+title.Font = Enum.Font.SourceSansBold
+title.Parent = frame
+
+-- Tool Name Label & TextBox
+local toolLabel = Instance.new("TextLabel")
+toolLabel.Size = UDim2.new(1, -20, 0, 20)
+toolLabel.Position = UDim2.new(0, 10, 0, 40)
+toolLabel.BackgroundTransparency = 1
+toolLabel.Text = "Tool Name:"
+toolLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+toolLabel.TextSize = 14
+toolLabel.TextXAlignment = Enum.TextXAlignment.Left
+toolLabel.Parent = frame
+
+local toolTextBox = Instance.new("TextBox")
+toolTextBox.Size = UDim2.new(1, -20, 0, 30)
+toolTextBox.Position = UDim2.new(0, 10, 0, 60)
+toolTextBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+toolTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+toolTextBox.PlaceholderText = "e.g. Colt Python, AK-47, Glock 17"
+toolTextBox.Text = targetToolName
+toolTextBox.TextSize = 16
+toolTextBox.Font = Enum.Font.SourceSans
+toolTextBox.Parent = frame
+local toolCorner = Instance.new("UICorner")
+toolCorner.CornerRadius = UDim.new(0, 6)
+toolCorner.Parent = toolTextBox
+
+-- ID Label & TextBox
+local idLabel = Instance.new("TextLabel")
+idLabel.Size = UDim2.new(1, -20, 0, 20)
+idLabel.Position = UDim2.new(0, 10, 0, 95)
+idLabel.BackgroundTransparency = 1
+idLabel.Text = "Sound ID:"
+idLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+idLabel.TextSize = 14
+idLabel.TextXAlignment = Enum.TextXAlignment.Left
+idLabel.Parent = frame
+
+local idTextBox = Instance.new("TextBox")
+idTextBox.Size = UDim2.new(1, -20, 0, 30)
+idTextBox.Position = UDim2.new(0, 10, 0, 115)
+idTextBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+idTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+idTextBox.PlaceholderText = "Enter new Sound ID"
+idTextBox.TextSize = 16
+idTextBox.Font = Enum.Font.SourceSans
+idTextBox.Parent = frame
+local idCorner = Instance.new("UICorner")
+idCorner.CornerRadius = UDim.new(0, 6)
+idCorner.Parent = idTextBox
+
+-- Volume Label & TextBox
+local volLabel = Instance.new("TextLabel")
+volLabel.Size = UDim2.new(1, -20, 0, 20)
+volLabel.Position = UDim2.new(0, 10, 0, 150)
+volLabel.BackgroundTransparency = 1
+volLabel.Text = "Volume (0=mute, ∞=LOUD!):"
+volLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+volLabel.TextSize = 14
+volLabel.TextXAlignment = Enum.TextXAlignment.Left
+volLabel.Parent = frame
+
+local volTextBox = Instance.new("TextBox")
+volTextBox.Size = UDim2.new(1, -20, 0, 30)
+volTextBox.Position = UDim2.new(0, 10, 0, 170)
+volTextBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+volTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+volTextBox.PlaceholderText = "e.g. 1.0, 50, 1000 (distorts!)"
+volTextBox.TextSize = 16
+volTextBox.Font = Enum.Font.SourceSans
+volTextBox.Parent = frame
+local volCorner = Instance.new("UICorner")
+volCorner.CornerRadius = UDim.new(0, 6)
+volCorner.Parent = volTextBox
+
+-- Dist Label & TextBox
+local distLabel = Instance.new("TextLabel")
+distLabel.Size = UDim2.new(1, -20, 0, 20)
+distLabel.Position = UDim2.new(0, 10, 0, 205)
+distLabel.BackgroundTransparency = 1
+distLabel.Text = "Dist (min,max studs ∞ ok):"
+distLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+distLabel.TextSize = 14
+distLabel.TextXAlignment = Enum.TextXAlignment.Left
+distLabel.Parent = frame
+
+local distTextBox = Instance.new("TextBox")
+distTextBox.Size = UDim2.new(1, -20, 0, 30)
+distTextBox.Position = UDim2.new(0, 10, 0, 225)
+distTextBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+distTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+distTextBox.PlaceholderText = "10,25 or 0,inf or inf,inf"
+distTextBox.TextSize = 16
+distTextBox.Font = Enum.Font.SourceSans
+distTextBox.Parent = frame
+local distCorner = Instance.new("UICorner")
+distCorner.CornerRadius = UDim.new(0, 6)
+distCorner.Parent = distTextBox
+
+-- Loop Toggle
+local loopButton = Instance.new("TextButton")
+loopButton.Size = UDim2.new(1, -20, 0, 35)
+loopButton.Position = UDim2.new(0, 10, 0, 260)
+loopButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+loopButton.Text = "🔄 Loop: OFF"
+loopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+loopButton.TextSize = 16
+loopButton.Font = Enum.Font.SourceSansBold
+loopButton.Parent = frame
+local loopCorner = Instance.new("UICorner")
+loopCorner.CornerRadius = UDim.new(0, 6)
+loopCorner.Parent = loopButton
+
+loopButton.MouseButton1Click:Connect(function()
+    targetLoop = not targetLoop
+    if targetLoop then
+        loopButton.Text = "🔄 Loop: ON"
+        loopButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    else
+        loopButton.Text = "🔄 Loop: OFF"
+        loopButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    end
+end)
+
+-- Apply Button
+local applyButton = Instance.new("TextButton")
+applyButton.Size = UDim2.new(1, -20, 0, 40)
+applyButton.Position = UDim2.new(0, 10, 0, 300)
+applyButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+applyButton.Text = "💥 APPLY TO ALL MATCHING TOOLS"
+applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyButton.TextSize = 16
+applyButton.Font = Enum.Font.SourceSansBold
+applyButton.Parent = frame
+local applyCorner = Instance.new("UICorner")
+applyCorner.CornerRadius = UDim.new(0, 6)
+applyCorner.Parent = applyButton
+
+-- Status Label
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -20, 0, 50)
+statusLabel.Position = UDim2.new(0, 10, 1, -55)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Ready - Type tool name & apply"
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+statusLabel.TextSize = 13
+statusLabel.Font = Enum.Font.SourceSans
+statusLabel.TextWrapped = true
+statusLabel.Parent = frame
+
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 2.5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextSize = 20
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.Parent = frame
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function()
+    if backpackConnection then backpackConnection:Disconnect() end
+    if equipConnection then equipConnection:Disconnect() end
+    screenGui:Destroy()
+end)
+
+-- Update module
+local function updateToolModule(tool, sid, svol, distab)
+    local ts = tool:FindFirstChild("toolSettings")
+    if ts and ts:IsA("ModuleScript") then
+        local success, settings = pcall(require, ts)
+        if success and settings and settings.soundTable then
+            for _, soundEntry in ipairs(settings.soundTable) do
+                if soundEntry.type == "equipped" or soundEntry.type == "equip" then
+                    soundEntry.id = sid
+                    soundEntry.volume = svol
+                    soundEntry.dist = distab
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+-- Force Sound Props
+local function forceSoundProps()
+    spawn(function()
+        wait(0.1)
+        local function setInDescendants(parent)
+            for _, obj in ipairs(parent:GetDescendants()) do
+                if obj:IsA("Sound") and obj.SoundId:match("rbxassetid://(%d+)") == tostring(targetSoundId) then
+                    obj.Volume = targetVolume
+                    obj.Looped = targetLoop
+                    print("🔊 FORCED: Vol=" .. targetVolume .. " Loop=" .. tostring(targetLoop) .. " on " .. obj:GetFullName())
+                end
+            end
+        end
+        if player.Character then setInDescendants(player.Character) end
+    end)
+end
+
+-- Load current values
+local function loadCurrentValues(toolName)
+    local backpack = player.Backpack
+    local char = player.Character
+    local foundTool = nil
+    for _, t in ipairs(backpack:GetChildren()) do 
+        if t.Name == toolName then foundTool = t break end
+    end
+    if not foundTool and char then
+        for _, t in ipairs(char:GetChildren()) do 
+            if t.Name == toolName then foundTool = t break end
+        end
+    end
+    if foundTool then
+        local ts = foundTool:FindFirstChild("toolSettings")
+        if ts and ts:IsA("ModuleScript") then
+            local success, settings = pcall(require, ts)
+            if success and settings and settings.soundTable then
+                for _, soundEntry in ipairs(settings.soundTable) do
+                    if soundEntry.type == "equipped" or soundEntry.type == "equip" then
+                        idTextBox.Text = tostring(soundEntry.id or "")
+                        volTextBox.Text = tostring(soundEntry.volume or 1)
+                        targetSoundId = soundEntry.id or targetSoundId
+                        targetVolume = soundEntry.volume or 1
+                        
+                        if soundEntry.dist and typeof(soundEntry.dist) == "table" and soundEntry.dist[1] ~= nil and soundEntry.dist[2] ~= nil then
+                            local d1 = soundEntry.dist[1]
+                            local d2 = soundEntry.dist[2]
+                            local d1str = (d1 == math.huge or d1 == 1/0) and "inf" or tostring(d1)
+                            local d2str = (d2 == math.huge or d2 == 1/0) and "inf" or tostring(d2)
+                            distTextBox.Text = d1str .. ", " .. d2str
+                            targetDistMin = d1
+                            targetDistMax = d2
+                        end
+                        
+                        statusLabel.Text = "✅ Loaded from " .. toolName .. "! Unequip/Equip to test"
+                        statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+                        return true
+                    end
+                end
+            end
+        end
+    end
+    statusLabel.Text = "No " .. toolName .. " found | Pick one up!"
+    statusLabel.TextColor3 = Color3.fromRGB(255, 150, 0)
+    return false
+end
+
+-- Setup monitoring
+local function setupMonitoring(toolName)
+    if backpackConnection then backpackConnection:Disconnect() end
+    if equipConnection then equipConnection:Disconnect() end
+    
+    backpackConnection = player.Backpack.ChildAdded:Connect(function(child)
+        if child.Name == toolName then
+            spawn(function()
+                local ts = child:WaitForChild("toolSettings", 5)
+                if ts then
+                    local distab = {targetDistMin, targetDistMax}
+                    updateToolModule(child, targetSoundId, targetVolume, distab)
+                    equipConnection = child.Equipped:Connect(function()
+                        spawn(function() wait(0.5) forceSoundProps() end)
+                    end)
+                    print("🆕 NEW " .. toolName .. " AUTO-SET: ID=" .. targetSoundId .. " Vol=" .. targetVolume .. " Dist=" .. targetDistMin .. "-" .. targetDistMax .. " Loop=" .. tostring(targetLoop))
+                    loadCurrentValues(toolName)
+                end
+            end)
+        end
+    end)
+    
+    spawn(function()
+        for _, child in ipairs(player.Backpack:GetChildren()) do
+            if child.Name == toolName and child:FindFirstChild("toolSettings") then
+                equipConnection = child.Equipped:Connect(function()
+                    spawn(function() wait(0.5) forceSoundProps() end)
+                end)
+            end
+        end
+        if player.Character then
+            for _, child in ipairs(player.Character:GetChildren()) do
+                if child.Name == toolName and child:IsA("Tool") then
+                    forceSoundProps()
+                end
+            end
+        end
+    end)
+end
+
+-- Initial
+setupMonitoring(targetToolName)
+loadCurrentValues(targetToolName)
+
+-- APPLY
+applyButton.MouseButton1Click:Connect(function()
+    local newToolName = toolTextBox.Text ~= "" and toolTextBox.Text or targetToolName
+    local newId = tonumber(idTextBox.Text)
+    local newVol = tonumber(volTextBox.Text)
+    local distParts = parseDist(distTextBox.Text)
+    
+    if newId and newVol ~= nil and newVol >= 0 and distParts then
+        local backpack = player.Backpack
+        local char = player.Character
+        local updatedCount = 0
+        
+        targetToolName = newToolName
+        targetSoundId = newId
+        targetVolume = newVol
+        targetDistMin, targetDistMax = distParts[1], distParts[2]
+        
+        for _, t in ipairs(backpack:GetChildren()) do
+            if t.Name == newToolName then
+                if updateToolModule(t, newId, newVol, distParts) then updatedCount = updatedCount + 1 end
+            end
+        end
+        if char then
+            for _, t in ipairs(char:GetChildren()) do
+                if t.Name == newToolName then
+                    if updateToolModule(t, newId, newVol, distParts) then updatedCount = updatedCount + 1 end
+                end
+            end
+        end
+        
+        forceSoundProps()
+        setupMonitoring(newToolName)
+        
+        local volWarn = (newVol > 10) and " (DISTORTS!)" or ""
+        local dminstr = (targetDistMin == math.huge) and "∞" or tostring(targetDistMin)
+        local dmaxstr = (targetDistMax == math.huge) and "∞" or tostring(targetDistMax)
+        statusLabel.Text = "✅ APPLIED " .. updatedCount .. " " .. newToolName .. "s! ID:" .. newId .. " Vol:" .. newVol .. volWarn .. " Dist:" .. dminstr .. "-" .. dmaxstr .. " Loop:" .. tostring(targetLoop)
+        statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+        
+        print("🎯 UPDATED " .. newToolName .. ":")
+        print("   ID=" .. newId)
+        print("   Vol=" .. newVol .. volWarn)
+        print("   Dist={" .. targetDistMin .. "," .. targetDistMax .. "}")
+        print("   Loop=" .. tostring(targetLoop))
+        print("   " .. updatedCount .. " tools + Auto new")
+        
+        wait(0.2)
+        loadCurrentValues(newToolName)
+    else
+        statusLabel.Text = "❌ INVALID:\n• ID=number\n• Vol>=0 number\n• Dist=10,25 or inf,inf"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+print("🌟 Sound Editor LOADED! If GUI doesn't show, check console for errors.")
