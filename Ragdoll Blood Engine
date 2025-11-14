@@ -1,4 +1,7 @@
 --[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+--[[
     FIX!!!!
 
 	how use :
@@ -317,7 +320,7 @@ local function updateToolModule(tool, sid, svol, distab)
         local success, settings = pcall(require, ts)
         if success and settings and settings.soundTable then
             for _, soundEntry in ipairs(settings.soundTable) do
-                if soundEntry.type == "equipped" or soundEntry.type == "equip" then
+                if soundEntry.type == "equipped" or soundEntry.type == "equip" or soundEntry.type == "EquipBolt" then
                     soundEntry.id = sid
                     soundEntry.volume = svol
                     soundEntry.dist = distab
@@ -365,7 +368,7 @@ local function loadCurrentValues(toolName)
             local success, settings = pcall(require, ts)
             if success and settings and settings.soundTable then
                 for _, soundEntry in ipairs(settings.soundTable) do
-                    if soundEntry.type == "equipped" or soundEntry.type == "equip" then
+                    if soundEntry.type == "equipped" or soundEntry.type == "equip" or soundEntry.type == "EquipBolt" then
                         idTextBox.Text = tostring(soundEntry.id or "")
                         volTextBox.Text = tostring(soundEntry.volume or 1)
                         targetSoundId = soundEntry.id or targetSoundId
