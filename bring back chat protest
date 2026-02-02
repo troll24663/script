@@ -1,0 +1,244 @@
+game:GetService("StarterGui"):SetCore("SendNotification", {
+  Title = "Enjoy this ai script",
+  Text = "Made By Ai",
+  Duration = 3,
+})
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Create GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SignHacker"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game.CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 250, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+MainFrame.BorderSizePixel = 0
+MainFrame.Visible = true
+MainFrame.Parent = ScreenGui
+MainFrame.Draggable = true
+MainFrame.Active = true
+
+-- Top Bar (draggable)
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 30)
+TopBar.Position = UDim2.new(0, 0, 0, 0)
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+TopBar.BorderSizePixel = 0
+TopBar.Active = true
+TopBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Position = UDim2.new(0, 5, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "SIGN HACKER"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.Parent = TopBar
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.Position = UDim2.new(1, -27, 0, 3)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Parent = TopBar
+
+-- Text Input
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(1, -10, 0, 40)
+TextBox.Position = UDim2.new(0, 5, 0, 35)
+TextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+TextBox.BorderSizePixel = 0
+TextBox.Text = "Enjoy❤️‍🩹"
+TextBox.PlaceholderText = "Custom text..."
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.TextSize = 14
+TextBox.Font = Enum.Font.Gotham
+TextBox.TextScaled = true
+TextBox.ClearTextOnFocus = false
+TextBox.Parent = MainFrame
+
+-- LOOP TOGGLE BUTTON
+local LoopBtn = Instance.new("TextButton")
+LoopBtn.Size = UDim2.new(1, -10, 0, 25)
+LoopBtn.Position = UDim2.new(0, 5, 0, 80)
+LoopBtn.BackgroundColor3 = Color3.fromRGB(100, 50, 50)
+LoopBtn.Text = "LOOP ALL: OFF"
+LoopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoopBtn.TextScaled = true
+LoopBtn.Font = Enum.Font.GothamBold
+LoopBtn.BorderSizePixel = 0
+LoopBtn.Parent = MainFrame
+
+-- Players List
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Size = UDim2.new(1, -10, 0, 180)
+ScrollFrame.Position = UDim2.new(0, 5, 0, 110)
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+ScrollFrame.BorderSizePixel = 0
+ScrollFrame.ScrollBarThickness = 6
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+ScrollFrame.Parent = MainFrame
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding = UDim.new(0, 2)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Parent = ScrollFrame
+
+-- TOGGLE GUI WITH INSERT
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Insert then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
+
+-- CLOSE BUTTON
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
+
+-- HOVER SYSTEM
+local buttonOriginals = {}
+local function addHover(btn)
+    local origColor = buttonOriginals[btn] or btn.BackgroundColor3
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = origColor:lerp(Color3.new(1,1,1), 0.2)}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = origColor}):Play()
+    end)
+end
+
+-- LOOP LOGIC
+local looping = false
+local loopThread
+LoopBtn.MouseButton1Click:Connect(function()
+    looping = not looping
+    if looping then
+        LoopBtn.Text = "LOOP ALL: ON"
+        LoopBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        buttonOriginals[LoopBtn] = LoopBtn.BackgroundColor3
+        print("🔥 Sign LOOP started! (0.3s spam)")
+        loopThread = spawn(function()
+            while looping do
+                local success, data = pcall(HttpService.JSONEncode, HttpService, {text = TextBox.Text})
+                if not success then
+                    data = '{"text":"' .. TextBox.Text:gsub([["]], [[\"]]) .. '"}'
+                end
+                local buf = buffer.fromstring(data)
+                for _, folder in pairs(workspace:GetChildren()) do
+                    pcall(function()
+                        local sign = folder:FindFirstChild("StuddedSign")
+                        if sign and sign:FindFirstChild("Change") then
+                            sign.Change:FireServer(buf)
+                        end
+                    end)
+                end
+                wait(0.3)
+            end
+        end)
+        addHover(LoopBtn)
+    else
+        LoopBtn.Text = "LOOP ALL: OFF"
+        LoopBtn.BackgroundColor3 = Color3.fromRGB(100, 50, 50)
+        buttonOriginals[LoopBtn] = LoopBtn.BackgroundColor3
+        print("⏹️ Sign LOOP stopped!")
+        addHover(LoopBtn)
+    end
+end)
+
+-- UPDATE PLAYERS
+local function UpdatePlayers()
+    for _, child in pairs(ScrollFrame:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    
+    -- ALL BUTTON (single fire)
+    local AllBtn = Instance.new("TextButton")
+    AllBtn.Size = UDim2.new(1, -6, 0, 25)
+    AllBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    AllBtn.Text = "HACK ALL"
+    AllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AllBtn.TextScaled = true
+    AllBtn.Font = Enum.Font.GothamBold
+    AllBtn.BorderSizePixel = 0
+    AllBtn.LayoutOrder = 0
+    AllBtn.Parent = ScrollFrame
+    buttonOriginals[AllBtn] = AllBtn.BackgroundColor3
+    addHover(AllBtn)
+    
+    AllBtn.MouseButton1Click:Connect(function()
+        local success, data = pcall(HttpService.JSONEncode, HttpService, {text = TextBox.Text})
+        if not success then data = '{"text":"' .. TextBox.Text:gsub([["]], [[\"]]) .. '"}' end
+        local buf = buffer.fromstring(data)
+        for _, folder in pairs(workspace:GetChildren()) do
+            pcall(function()
+                local sign = folder:FindFirstChild("StuddedSign")
+                if sign and sign:FindFirstChild("Change") then
+                    sign.Change:FireServer(buf)
+                end
+            end)
+        end
+        print("Hacked ALL signs (once)!")
+    end)
+    
+    -- PLAYER BUTTONS (includes self)
+    local layoutOrder = 1
+    for _, plr in pairs(Players:GetPlayers()) do
+        local Btn = Instance.new("TextButton")
+        Btn.Size = UDim2.new(1, -6, 0, 25)
+        Btn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+        Btn.Text = plr.Name
+        Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Btn.TextScaled = true
+        Btn.Font = Enum.Font.Gotham
+        Btn.BorderSizePixel = 0
+        Btn.LayoutOrder = layoutOrder
+        Btn.Parent = ScrollFrame
+        buttonOriginals[Btn] = Btn.BackgroundColor3
+        addHover(Btn)
+        
+        Btn.MouseButton1Click:Connect(function()
+            local success, data = pcall(HttpService.JSONEncode, HttpService, {text = TextBox.Text})
+            if not success then data = '{"text":"' .. TextBox.Text:gsub([["]], [[\"]]) .. '"}' end
+            local buf = buffer.fromstring(data)
+            pcall(function()
+                local folder = workspace:FindFirstChild(plr.Name)
+                if folder then
+                    local sign = folder:FindFirstChild("StuddedSign")
+                    if sign and sign:FindFirstChild("Change") then
+                        sign.Change:FireServer(buf)
+                        print("Hacked " .. plr.Name .. "'s sign!")
+                    end
+                end
+            end)
+        end)
+        layoutOrder += 1
+    end
+    
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+end
+
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+end)
+
+Players.PlayerAdded:Connect(UpdatePlayers)
+Players.PlayerRemoving:Connect(function() wait(0.5) UpdatePlayers() end)
+
+UpdatePlayers()
